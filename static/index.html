@@ -156,6 +156,12 @@
   .chat-text strong{color:var(--accent);}
   .chat-cursor{display:inline-block;width:6px;height:12px;background:var(--accent);animation:blink 1s step-end infinite;}
   @keyframes blink{50%{opacity:0;}}
+  /* global ticker autocomplete */
+  .ticker-ac{position:fixed;background:var(--bg2);border:1px solid var(--border);z-index:300;min-width:280px;max-height:220px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.6);}
+  .ticker-ac-item{padding:6px 10px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;font-size:11px;}
+  .ticker-ac-item:hover,.ticker-ac-item.active{background:var(--bg3);}
+  .ticker-ac-sym{color:var(--blue);font-weight:600;min-width:60px;}
+  .ticker-ac-name{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .news-item{padding:12px 0;border-bottom:1px solid var(--border);}
   .news-item:hover{background:var(--bg3);margin:0 -16px;padding:12px 16px;}
   .news-source{font-size:9px;letter-spacing:1px;font-weight:600;margin-right:8px;}
@@ -767,6 +773,8 @@
 </div><!-- /page-news -->
 
 <!-- GLOBAL CHART OVERLAY (used by WEI, WEIF, FX) -->
+<div class="ticker-ac" id="tickerAC" style="display:none;"></div>
+
 <div id="globalChartOverlay" style="display:none;position:fixed;top:38px;right:0;width:520px;height:calc(100vh - 38px);background:var(--bg2);border-left:1px solid var(--border);z-index:150;display:none;flex-direction:column;">
   <div class="chart-header">
     <div><div class="chart-title" id="gChartTicker">--</div><div class="chart-subtitle" id="gChartName">--</div></div>
@@ -1774,6 +1782,72 @@ function handleCmd(e){
   execCmd(raw);
 }
 
+/* ========== GLOBAL TICKER AUTOCOMPLETE ========== */
+let acResults=[], acIdx=-1, acInput=null, acTimer=null, acCallback=null;
+
+function initTickerAC(inputEl, onSelect){
+  inputEl.addEventListener('input',()=>{
+    clearTimeout(acTimer);
+    acInput=inputEl;
+    acCallback=onSelect;
+    const q=inputEl.value.trim();
+    if(q.length<1){hideAC();return;}
+    acTimer=setTimeout(()=>fetchAC(q),200);
+  });
+  inputEl.addEventListener('keydown',e=>{
+    const dd=document.getElementById('tickerAC');
+    if(dd.style.display==='none')return;
+    if(e.key==='ArrowDown'){e.preventDefault();acIdx=Math.min(acIdx+1,acResults.length-1);renderAC();}
+    else if(e.key==='ArrowUp'){e.preventDefault();acIdx=Math.max(acIdx-1,0);renderAC();}
+    else if(e.key==='Enter'&&acIdx>=0&&acResults[acIdx]){e.preventDefault();selectAC(acIdx);}
+    else if(e.key==='Escape'){hideAC();}
+  });
+  inputEl.addEventListener('blur',()=>setTimeout(hideAC,150));
+}
+
+async function fetchAC(q){
+  try{
+    const res=await fetch(`${API}/search/${encodeURIComponent(q)}`);
+    acResults=await res.json();
+    acIdx=-1;
+    if(acResults.length)showAC();else hideAC();
+  }catch(e){hideAC();}
+}
+
+function showAC(){
+  if(!acInput)return;
+  const dd=document.getElementById('tickerAC');
+  const rect=acInput.getBoundingClientRect();
+  dd.style.top=(rect.bottom+2)+'px';
+  dd.style.left=rect.left+'px';
+  dd.style.minWidth=Math.max(280,rect.width)+'px';
+  dd.style.display='block';
+  renderAC();
+}
+
+function renderAC(){
+  const dd=document.getElementById('tickerAC');
+  dd.innerHTML=acResults.map((s,i)=>
+    `<div class="ticker-ac-item${i===acIdx?' active':''}" onmousedown="selectAC(${i})"><span class="ticker-ac-sym">${s.symbol}</span><span class="ticker-ac-name">${s.name}</span></div>`
+  ).join('');
+}
+
+function selectAC(i){
+  const s=acResults[i];
+  if(!s)return;
+  if(acCallback){
+    acCallback(s.symbol,s.name);
+  } else if(acInput){
+    acInput.value=s.symbol;
+  }
+  hideAC();
+}
+
+function hideAC(){
+  document.getElementById('tickerAC').style.display='none';
+  acResults=[];acIdx=-1;
+}
+
 let loadedTicker=null;
 
 function execCmd(cmd){
@@ -1960,8 +2034,42 @@ setInterval(()=>{
 
 // keep cmd input focused when clicking anywhere (BBG style)
 document.addEventListener('click',e=>{
-  if(!e.target.closest('input,button,.buy-cell,.ticker-cell,.add-ticker-input,.period-btn,.home-cmd,.close-btn,.del-btn,.grp-actions'))
+  if(!e.target.closest('input,button,.buy-cell,.ticker-cell,.add-ticker-input,.period-btn,.home-cmd,.close-btn,.del-btn,.grp-actions,.ticker-ac'))
     document.getElementById('cmdInput').focus();
+});
+
+// init ticker autocomplete on key inputs
+// command bar: only show AC when input doesn't match a known command
+const knownCmds=new Set(Object.keys(COMMANDS).concat(['HS','FA','GP','DES','EVT','CN','LOAD']));
+const cmdInputEl=document.getElementById('cmdInput');
+const origACHandler=cmdInputEl.oninput;
+initTickerAC(cmdInputEl,(sym)=>{
+  cmdInputEl.value=sym;
+  hideAC();
+});
+// override the AC input handler to skip known commands
+cmdInputEl.addEventListener('input',function(){
+  const val=this.value.trim().toUpperCase();
+  const firstWord=val.split(/\s+/)[0];
+  // if it's a known command or starts with one, don't show AC
+  if(knownCmds.has(firstWord)||val.length<2){hideAC();return;}
+  // if it has a space (like "FA " prefix), search the part after
+  const parts=val.split(/\s+/);
+  if(parts.length>1&&['FA','GP','DES','EVT','CN','LOAD'].includes(parts[0])){
+    // search for the second part
+    clearTimeout(acTimer);
+    acInput=this;
+    acCallback=(sym)=>{this.value=parts[0]+' '+sym;hideAC();};
+    acTimer=setTimeout(()=>fetchAC(parts[parts.length-1]),200);
+  }
+},{capture:true});
+// HS inputs
+initTickerAC(document.getElementById('hsTicker1'),(sym)=>{document.getElementById('hsTicker1').value=sym;});
+initTickerAC(document.getElementById('hsTicker2'),(sym)=>{document.getElementById('hsTicker2').value=sym;});
+// GP compare input
+initTickerAC(document.getElementById('gpCompareInput'),(sym)=>{
+  document.getElementById('gpCompareInput').value=sym;
+  gpAddCompare();
 });
 
 /* ========== WIRP ========== */
