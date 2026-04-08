@@ -1838,13 +1838,17 @@ const COMMANDS={
   'NEWS':{page:'news',label:'Newsletters'},
 };
 
+let acSuppressed=false;
 function handleCmd(e){
   if(e.key!=='Enter')return;
+  acSuppressed=true;
+  clearTimeout(acTimer);
   hideAC();
   const raw=document.getElementById('cmdInput').value.trim().toUpperCase();
   document.getElementById('cmdInput').value='';
   if(!raw)return;
   execCmd(raw);
+  setTimeout(()=>{acSuppressed=false;},300);
 }
 
 /* ========== GLOBAL TICKER AUTOCOMPLETE ========== */
@@ -1880,7 +1884,7 @@ async function fetchAC(q){
 }
 
 function showAC(){
-  if(!acInput)return;
+  if(!acInput||acSuppressed)return;
   const dd=document.getElementById('tickerAC');
   const rect=acInput.getBoundingClientRect();
   dd.style.top=(rect.bottom+2)+'px';
@@ -2179,6 +2183,7 @@ document.addEventListener('click',e=>{
 const knownCmds=new Set(Object.keys(COMMANDS).concat(['HS','FA','GP','DES','EVT','CN','LOAD']));
 const cmdInputEl=document.getElementById('cmdInput');
 cmdInputEl.addEventListener('input',function(){
+  if(acSuppressed){hideAC();return;}
   const val=this.value.trim().toUpperCase();
   const parts=val.split(/\s+/);
   const firstWord=parts[0];
