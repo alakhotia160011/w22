@@ -1373,8 +1373,17 @@ async function openChart(ticker,name){
   await renderChart(ticker,currentPeriod);
 }
 
-/* --- chart axis helpers --- */
+/* --- EST timezone helpers --- */
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function toEST(d){
+  if(!(d instanceof Date)||isNaN(d))return d;
+  return new Date(d.toLocaleString('en-US',{timeZone:'America/New_York'}));
+}
+function estTime(d){const e=toEST(d);return e.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false});}
+function estDatetime(d){const e=toEST(d);return fmt_dd_mmm(e)+' '+estTime(d);}
+function estFull(d){const e=toEST(d);return fmt_dd_mmm_yy(e)+' '+estTime(d);}
+
+/* --- chart axis helpers --- */
 function fmt_time(d){return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false});}
 function fmt_dd_mmm(d){return d.getDate()+'-'+MON[d.getMonth()];}                        // 7-Apr
 function fmt_dd_mmm_yy(d){return d.getDate()+'-'+MON[d.getMonth()]+'-'+String(d.getFullYear()).slice(2);}  // 7-Apr-26
@@ -1918,7 +1927,7 @@ function updateCmdClock(){
   const isOpen=et.getDay()>=1&&et.getDay()<=5&&((h===9&&m>=30)||h>=10)&&h<16;
   const local=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
   const etStr=et.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
-  document.getElementById('cmdClock').innerHTML=`${local} <span style="color:${isOpen?'var(--green)':'#333'}">${isOpen?'MKT OPEN':'MKT CLOSED'}</span>`;
+  document.getElementById('cmdClock').innerHTML=`${etStr} ET <span style="color:${isOpen?'var(--green)':'#333'}">${isOpen?'MKT OPEN':'MKT CLOSED'}</span>`;
 }
 setInterval(updateCmdClock,1000);
 updateCmdClock();
@@ -2298,7 +2307,7 @@ function showNewsletter(idx){
   let dateDisplay=nl.date||'';
   try{
     const d=new Date(nl.date);
-    if(!isNaN(d))dateDisplay=`${d.getDate()}-${MON[d.getMonth()]}-${String(d.getFullYear()).slice(2)} ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false})}`;
+    if(!isNaN(d))dateDisplay=estFull(d)+' ET';
   }catch(e){}
 
   // standardised formatter for all newsletters
@@ -2403,25 +2412,27 @@ function renderTOP(){
 
   let lastDate='';
   filtered.forEach(a=>{
-    const dateStr=a.date?a.date.slice(0,10):'';
-    if(dateStr&&dateStr!==lastDate){
-      lastDate=dateStr;
-      const d=new Date(dateStr+'T12:00:00');
-      const dayName=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+    // convert to EST
+    const rawDate=a.date?new Date(a.date):null;
+    const estD=rawDate?toEST(rawDate):null;
+    const dateKey=estD?`${estD.getFullYear()}-${estD.getMonth()}-${estD.getDate()}`:'';
+    if(dateKey&&dateKey!==lastDate){
+      lastDate=dateKey;
+      const dayName=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][estD.getDay()];
       const hdr=document.createElement('div');
       hdr.style.cssText='padding:10px 0 4px;color:var(--accent);font-size:10px;letter-spacing:2px;font-weight:600;border-bottom:1px solid var(--border);margin-top:8px;';
-      hdr.textContent=`${dayName} ${d.getDate()}-${MON[d.getMonth()]}-${String(d.getFullYear()).slice(2)}`;
+      hdr.textContent=`${dayName} ${estD.getDate()}-${MON[estD.getMonth()]}-${String(estD.getFullYear()).slice(2)}`;
       el.appendChild(hdr);
     }
 
     const srcMap={'DealBook':'dealbook','FT':'ft','WSJ':'wsj','Economist':'economist','CNBC':'cnbc','BBC':'bbc','Axios':'axios','MarketWatch':'marketwatch'};
     const srcCls='news-source-'+(srcMap[a.source]||'default');
-    const timeStr=a.date&&a.date.length>=16?a.date.slice(11,16):'';
+    const timeStr=estD?estTime(rawDate):'';
 
     const div=document.createElement('div');
     div.className='news-item';
     div.innerHTML=`
-      <div><span class="news-source ${srcCls}">${a.source}</span><span class="news-time">${timeStr}</span></div>
+      <div><span class="news-source ${srcCls}">${a.source}</span><span class="news-time">${timeStr?timeStr+' ET':''}</span></div>
       <div class="news-title"><a href="${a.link}" target="_blank" rel="noopener">${a.title}</a></div>
       ${a.desc?`<div class="news-desc">${a.desc}</div>`:''}`;
     el.appendChild(div);
@@ -2698,7 +2709,7 @@ async function loadCN(ticker){
       if(a.date){
         try{
           const dt=new Date(a.date);
-          dateStr=fmt_dd_mmm_yy(dt)+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false});
+          dateStr=estFull(dt);
         }catch(e){dateStr=a.date;}
       }
       const div=document.createElement('div');
