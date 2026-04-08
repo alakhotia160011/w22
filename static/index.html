@@ -226,14 +226,14 @@
   .page.active{display:contents;}
 
   /* home screen */
-  .home{display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 38px);background:var(--bg);gap:24px;}
-  .home-logo{color:var(--accent);font-size:36px;font-weight:600;letter-spacing:6px;}
-  .home-sub{color:var(--muted);font-size:12px;letter-spacing:2px;}
-  .home-cmds{display:flex;flex-direction:column;gap:8px;margin-top:20px;min-width:300px;}
-  .home-cmd{display:flex;justify-content:space-between;padding:10px 16px;background:var(--bg2);border:1px solid var(--border);cursor:pointer;transition:border-color .15s;}
+  .home{display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 38px);background:var(--bg);gap:12px;}
+  .home-logo{color:var(--accent);font-size:28px;font-weight:600;letter-spacing:6px;}
+  .home-sub{color:var(--muted);font-size:11px;letter-spacing:2px;}
+  .home-cmds{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:12px;min-width:600px;}
+  .home-cmd{display:flex;justify-content:space-between;padding:6px 12px;background:var(--bg2);border:1px solid var(--border);cursor:pointer;transition:border-color .15s;align-items:center;}
   .home-cmd:hover{border-color:var(--accent);}
-  .home-cmd-key{color:var(--green);font-weight:600;font-size:13px;letter-spacing:2px;}
-  .home-cmd-desc{color:var(--muted);font-size:11px;}
+  .home-cmd-key{color:var(--green);font-weight:600;font-size:11px;letter-spacing:2px;min-width:90px;}
+  .home-cmd-desc{color:var(--muted);font-size:10px;}
   .home-footer{color:var(--muted);font-size:10px;margin-top:40px;letter-spacing:1px;}
 </style>
 </head>
@@ -310,7 +310,7 @@
         <span class="home-cmd-desc">My Newsletters (Money Stuff, TLDR, Endpoints...)</span>
       </div>
     </div>
-    <div class="home-footer" style="display:flex;justify-content:space-between;width:100%;padding:0 40px;">
+    <div class="home-footer" style="display:flex;justify-content:space-between;width:100%;padding:0 40px;position:fixed;bottom:16px;left:0;right:0;">
       <span>TYPE A COMMAND AND PRESS ENTER &middot; TYPE <span style="color:var(--accent)">LEARN</span> FOR A GUIDE</span>
       <span>BUILT BY ARYAMAAN LAKHOTIA &middot; 2026</span>
     </div>
@@ -839,8 +839,7 @@
 <div class="topbar">
   <div><div class="logo">W22 &#9654; LEARN</div><div class="tagline">HOW TO USE THE TERMINAL</div></div>
 </div>
-<div style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);padding:24px 40px;">
-  <div style="max-width:900px;">
+<div style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);padding:24px 24px;">
 
     <p style="color:var(--text);font-size:13px;line-height:1.7;margin-bottom:20px;">W22 is a Bloomberg-style terminal for tracking markets, reading news, and analysing securities. Everything is driven by the <span style="color:var(--accent);">command bar</span> at the top. Type a command and press <span style="color:var(--accent);">Enter</span>.</p>
 
@@ -908,7 +907,6 @@
       <div class="fa-row"><span class="fa-label" style="min-width:200px;">Date format</span><span class="fa-val">dd-Mmm-YY throughout (e.g. 7-Apr-26)</span></div>
     </div>
 
-  </div>
 </div>
 </div><!-- /page-learn -->
 
