@@ -904,6 +904,111 @@ def chat():
 
     return Response(stream_with_context(generate()), mimetype='text/event-stream')
 
+_fit_cache = {'ts': 0, 'data': None}
+
+@app.route('/api/fit')
+def fit():
+    import time as _time
+    if _fit_cache['data'] and _time.time() - _fit_cache['ts'] < 15:
+        return jsonify(_fit_cache['data'])
+
+    yields_tickers = ['^IRX', '^FVX', '^TNX', '^TYX']
+    futures_tickers = ['ZT=F', 'ZF=F', 'ZN=F', 'ZB=F', 'UB=F']
+    etf_tickers = ['SHV', 'SHY', 'IEI', 'IEF', 'TLT']
+    all_tickers = yields_tickers + futures_tickers + etf_tickers
+
+    yields_meta = {
+        '^IRX': {'name': '3-Month T-Bill', 'tenor': '3M', 'months': 3},
+        '^FVX': {'name': '5-Year Note', 'tenor': '5Y', 'months': 60},
+        '^TNX': {'name': '10-Year Note', 'tenor': '10Y', 'months': 120},
+        '^TYX': {'name': '30-Year Bond', 'tenor': '30Y', 'months': 360},
+    }
+    futures_meta = {
+        'ZT=F': {'name': '2-Year Note Futures', 'tenor': '2Y'},
+        'ZF=F': {'name': '5-Year Note Futures', 'tenor': '5Y'},
+        'ZN=F': {'name': '10-Year Note Futures', 'tenor': '10Y'},
+        'ZB=F': {'name': '30-Year Bond Futures', 'tenor': '30Y'},
+        'UB=F': {'name': 'Ultra Bond Futures', 'tenor': 'Ultra'},
+    }
+    etf_meta = {
+        'SHV': {'name': 'Short Treasury ETF', 'tenor': '0-1Y'},
+        'SHY': {'name': '1-3 Year Treasury ETF', 'tenor': '1-3Y'},
+        'IEI': {'name': '3-7 Year Treasury ETF', 'tenor': '3-7Y'},
+        'IEF': {'name': '7-10 Year Treasury ETF', 'tenor': '7-10Y'},
+        'TLT': {'name': '20+ Year Treasury ETF', 'tenor': '20+Y'},
+    }
+
+    try:
+        hist = yf.download(all_tickers, period='3mo', interval='1d', progress=False)
+        live = {}
+        try:
+            intra = yf.download(all_tickers, period='1d', interval='1m', progress=False)
+            if not intra.empty:
+                for t in all_tickers:
+                    try:
+                        c = intra['Close'][t].dropna()
+                        if not c.empty:
+                            live[t] = float(c.iloc[-1])
+                    except: pass
+        except: pass
+
+        if hist.empty:
+            return jsonify({'error': 'No data'})
+
+        def build_item(ticker, meta, group):
+            try:
+                close = hist['Close'][ticker].dropna()
+                if close.empty or len(close) < 2:
+                    return None
+                last = live.get(ticker, float(close.iloc[-1]))
+                prev = float(close.iloc[-2])
+                d = round(last - prev, 3)
+                dp = round((d / prev) * 100, 3) if prev else 0
+                p5d = round(last - float(close.iloc[-6]), 3) if len(close) >= 6 else None
+                p1m = round(last - float(close.iloc[-22]), 3) if len(close) >= 22 else None
+                p3m = round(last - float(close.iloc[0]), 3) if len(close) >= 2 else None
+                return {
+                    'ticker': ticker, 'group': group,
+                    'name': meta['name'], 'tenor': meta['tenor'],
+                    'c': round(last, 3), 'd': d, 'dp': dp,
+                    'p5d': p5d, 'p1m': p1m, 'p3m': p3m,
+                }
+            except:
+                return None
+
+        yields_data = []
+        for t in yields_tickers:
+            item = build_item(t, yields_meta[t], 'yields')
+            if item:
+                yields_data.append(item)
+
+        futures_data = []
+        for t in futures_tickers:
+            item = build_item(t, futures_meta[t], 'futures')
+            if item:
+                futures_data.append(item)
+
+        etf_data = []
+        for t in etf_tickers:
+            item = build_item(t, etf_meta[t], 'etfs')
+            if item:
+                etf_data.append(item)
+
+        # yield curve data points
+        curve = []
+        for t in yields_tickers:
+            m = yields_meta[t]
+            item = next((y for y in yields_data if y['ticker'] == t), None)
+            if item:
+                curve.append({'tenor': m['tenor'], 'months': m['months'], 'yield': item['c']})
+
+        resp = {'yields': yields_data, 'futures': futures_data, 'etfs': etf_data, 'curve': curve}
+        _fit_cache['ts'] = _time.time()
+        _fit_cache['data'] = resp
+        return jsonify(resp)
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
 @app.route('/api/pred')
 def pred():
     import ast

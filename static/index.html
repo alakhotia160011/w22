@@ -243,7 +243,7 @@
 <div class="cmdbar">
   <span class="cmdbar-logo" onclick="navigateTo('home')">W22</span>
   <input class="cmd-input" id="cmdInput" placeholder="Enter command..." autofocus onkeydown="handleCmd(event)"/>
-  <span class="cmd-hint" id="cmdHint">W | WIRP | ECO | WEI | WEIF | FX | GLCO | HEAT | PRED | TOP | NEWS | CHAT</span>
+  <span class="cmd-hint" id="cmdHint">W | WIRP | ECO | WEI | WEIF | FX | GLCO | FIT | HEAT | PRED | TOP | NEWS | CHAT</span>
   <span class="cmd-clock" id="cmdClock">--</span>
 </div>
 
@@ -289,6 +289,10 @@
         <span class="home-cmd-key">HS &lt;T1&gt; &lt;T2&gt;</span>
         <span class="home-cmd-desc">Historical Spread (e.g. HS AAPL MSFT)</span>
       </div>
+      <div class="home-cmd" onclick="execCmd('FIT')">
+        <span class="home-cmd-key">FIT &lt;GO&gt;</span>
+        <span class="home-cmd-desc">US Treasury Yields &amp; Curve</span>
+      </div>
       <div class="home-cmd" onclick="execCmd('PRED')">
         <span class="home-cmd-key">PRED &lt;GO&gt;</span>
         <span class="home-cmd-desc">Prediction Markets (Polymarket)</span>
@@ -307,7 +311,7 @@
       </div>
     </div>
     <div class="home-footer" style="display:flex;justify-content:space-between;width:100%;padding:0 40px;">
-      <span>TYPE A COMMAND AND PRESS ENTER</span>
+      <span>TYPE A COMMAND AND PRESS ENTER &middot; TYPE <span style="color:var(--accent)">LEARN</span> FOR A GUIDE</span>
       <span>BUILT BY ARYAMAAN LAKHOTIA &middot; 2026</span>
     </div>
   </div>
@@ -623,6 +627,39 @@
 <div id="heatContent" style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);padding:8px;"></div>
 </div><!-- /page-heat -->
 
+<!-- FIT PAGE -->
+<div class="page" id="page-fit">
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div><div class="logo">W22 &#9654; FIT</div><div class="tagline">US TREASURY YIELDS</div></div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span id="fitStatus" style="color:var(--muted);font-size:10px;">--</span>
+    <button class="tb-btn" onclick="loadFIT()">&#8635; REFRESH</button>
+  </div>
+</div>
+<div style="height:calc(100vh - 38px - 41px);display:flex;flex-direction:column;background:var(--bg);">
+  <div style="flex:0 0 240px;padding:12px 16px;border-bottom:1px solid var(--border);position:relative;">
+    <canvas id="fitCurveChart"></canvas>
+  </div>
+  <div style="flex:1;overflow-y:auto;">
+    <table style="min-width:800px;">
+      <thead><tr>
+        <th style="text-align:left;">TENOR</th>
+        <th style="text-align:left;">NAME</th>
+        <th>YIELD / PRICE</th>
+        <th>NET</th>
+        <th>%1D</th>
+        <th>5D CHG</th>
+        <th>1M CHG</th>
+        <th>3M CHG</th>
+      </tr></thead>
+      <tbody id="fitTableBody"></tbody>
+    </table>
+  </div>
+</div>
+</div><!-- /page-fit -->
+
 <!-- FA PAGE -->
 <div class="page" id="page-fa">
 <div class="topbar">
@@ -796,6 +833,84 @@
   </div>
 </div>
 </div><!-- /page-chat -->
+
+<!-- LEARN PAGE -->
+<div class="page" id="page-learn">
+<div class="topbar">
+  <div><div class="logo">W22 &#9654; LEARN</div><div class="tagline">HOW TO USE THE TERMINAL</div></div>
+</div>
+<div style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);padding:24px 40px;">
+  <div style="max-width:900px;">
+
+    <p style="color:var(--text);font-size:13px;line-height:1.7;margin-bottom:20px;">W22 is a Bloomberg-style terminal for tracking markets, reading news, and analysing securities. Everything is driven by the <span style="color:var(--accent);">command bar</span> at the top. Type a command and press <span style="color:var(--accent);">Enter</span>.</p>
+
+    <div class="fa-card" style="margin-bottom:16px;">
+      <div class="fa-card-title">GETTING STARTED</div>
+      <div class="fa-row"><span class="fa-label" style="min-width:200px;">Navigate home</span><span class="fa-val">Click <span style="color:var(--accent)">W22</span> logo (top left)</span></div>
+      <div class="fa-row"><span class="fa-label" style="min-width:200px;">Run a command</span><span class="fa-val">Type in command bar, press Enter</span></div>
+      <div class="fa-row"><span class="fa-label" style="min-width:200px;">Search for a ticker</span><span class="fa-val">Start typing a company name - suggestions appear</span></div>
+      <div class="fa-row"><span class="fa-label" style="min-width:200px;">Load a security</span><span class="fa-val">Type ticker (e.g. <span style="color:var(--blue)">AAPL</span>) or name (e.g. <span style="color:var(--blue)">apple</span>)</span></div>
+    </div>
+
+    <div class="fa-card" style="margin-bottom:16px;">
+      <div class="fa-card-title">MARKET SCREENS</div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">W</span><span class="fa-val">Watchlist - your personal worksheet with live quotes, editable buy prices, RSI, charts. Click any ticker for a chart. Add/delete rows. Edit buy prices inline.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">WEI</span><span class="fa-val">World Equity Indices - S&P 500, Dow, NASDAQ, FTSE, DAX, Nikkei, Hang Seng, and more. Click any index for a chart.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">WEIF</span><span class="fa-val">Equity Index Futures - E-mini S&P, NASDAQ, Dow, Russell, Nikkei futures. Live prices, especially useful pre-market.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">FX</span><span class="fa-val">Foreign Exchange - G10 pairs (EUR/USD, GBP/USD, USD/JPY...), EM currencies, DXY index, Bitcoin & Ethereum.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">GLCO</span><span class="fa-val">Global Commodities - WTI, Brent, Natural Gas, Gold, Silver, Copper, Corn, Wheat, Coffee, and more.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">FIT</span><span class="fa-val">Fixed Income - US Treasury yield curve (3M, 5Y, 10Y, 30Y), treasury futures, treasury ETFs.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">HEAT</span><span class="fa-val">Sector Heatmap - visual map of S&P 500 or NASDAQ 100 by sector. Toggle 1D/5D/1M/3M. Click any stock for a chart.</span></div>
+    </div>
+
+    <div class="fa-card" style="margin-bottom:16px;">
+      <div class="fa-card-title">SECURITY ANALYSIS</div>
+      <p style="color:var(--muted);font-size:11px;margin-bottom:8px;">First load a security by typing its ticker or name. Then use these sub-commands:</p>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">GP</span><span class="fa-val">Price chart - 1D to MAX history. Toggle $ price vs normalised (base 100). Add comparison tickers with the COMPARE input.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">DES</span><span class="fa-val">Company description - sector, industry, HQ, employee count, website, market cap.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">FA</span><span class="fa-val">Fundamental analysis - valuation (P/E, P/B, EV/EBITDA), profitability (margins, ROE), balance sheet. Tabs for Income Statement, Balance Sheet, Cash Flow.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">EVT</span><span class="fa-val">Events - next earnings date, dividend dates, 8 quarters of EPS history with beat/miss tracking.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">CN</span><span class="fa-val">Company news - latest headlines from Yahoo Finance for the loaded ticker.</span></div>
+      <p style="color:var(--muted);font-size:11px;margin-top:8px;">You can also go direct: <span style="color:var(--blue)">FA NVDA</span>, <span style="color:var(--blue)">DES TSLA</span>, <span style="color:var(--blue)">CN AAPL</span></p>
+    </div>
+
+    <div class="fa-card" style="margin-bottom:16px;">
+      <div class="fa-card-title">RATES & ECONOMICS</div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">WIRP</span><span class="fa-val">Rate expectations - how the market is pricing Fed and BoJ rate cuts/hikes at each meeting. Uses fed funds and TONA futures.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">ECO</span><span class="fa-val">Economic calendar - this week's US releases (CPI, NFP, GDP, ISM...). Filter by impact. Surprise index tracks beats vs misses.</span></div>
+    </div>
+
+    <div class="fa-card" style="margin-bottom:16px;">
+      <div class="fa-card-title">ANALYSIS TOOLS</div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">HS T1 T2</span><span class="fa-val">Historical Spread - compare 2 tickers side by side. Top chart: normalised or $ price. Bottom chart: subtract, ratio, or residual. Use the flip button to swap.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">PRED</span><span class="fa-val">Prediction markets from Polymarket. Browse by category (Geopolitics, Politics, Crypto, Sports...). Click any market for price history chart.</span></div>
+    </div>
+
+    <div class="fa-card" style="margin-bottom:16px;">
+      <div class="fa-card-title">NEWS & READING</div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">TOP</span><span class="fa-val">Aggregated news from DealBook, FT, WSJ, CNBC, BBC, Axios, MarketWatch. Filter by source. Click headlines to read full articles.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">NEWS</span><span class="fa-val">Your email newsletters - Money Stuff, DealBook, TLDR, Endpoints, GZERO, The Athletic, LatAm Briefing. Pulled directly from your Gmail inbox.</span></div>
+    </div>
+
+    <div class="fa-card" style="margin-bottom:16px;">
+      <div class="fa-card-title">OTHER</div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">CHAT</span><span class="fa-val">AI chatbot powered by Claude. Ask any question - markets, finance, general knowledge. Has live market data in context.</span></div>
+      <div class="fa-row"><span class="fa-label" style="color:var(--accent);min-width:80px;">LEARN</span><span class="fa-val">This page.</span></div>
+    </div>
+
+    <div class="fa-card" style="margin-bottom:16px;">
+      <div class="fa-card-title">TIPS</div>
+      <div class="fa-row"><span class="fa-label" style="min-width:200px;">All data refreshes every 15 seconds</span><span class="fa-val">Watch the countdown in the status area</span></div>
+      <div class="fa-row"><span class="fa-label" style="min-width:200px;">All times are in EST</span><span class="fa-val">Matches NYSE trading hours</span></div>
+      <div class="fa-row"><span class="fa-label" style="min-width:200px;">NYSE bell rings at 9:30 AM and 4:00 PM ET</span><span class="fa-val">Opening and closing bell sounds</span></div>
+      <div class="fa-row"><span class="fa-label" style="min-width:200px;">Charts are everywhere</span><span class="fa-val">Click any blue ticker in WEI, WEIF, FX, GLCO, HEAT</span></div>
+      <div class="fa-row"><span class="fa-label" style="min-width:200px;">Watchlist persists</span><span class="fa-val">Your tickers and buy prices are saved in your browser</span></div>
+      <div class="fa-row"><span class="fa-label" style="min-width:200px;">Date format</span><span class="fa-val">dd-Mmm-YY throughout (e.g. 7-Apr-26)</span></div>
+    </div>
+
+  </div>
+</div>
+</div><!-- /page-learn -->
 
 <!-- TOP PAGE -->
 <div class="page" id="page-top">
@@ -1824,6 +1939,7 @@ let currentHeatIdx='sp500';
 let currentHeatPeriod='dp';
 let topInitialized=false;
 let predInitialized=false;
+let fitInitialized=false;
 let newsInitialized=false;
 
 const COMMANDS={
@@ -1835,8 +1951,10 @@ const COMMANDS={
   'FX':{page:'fx',label:'FX Monitor'},
   'GLCO':{page:'glco',label:'Commodities'},
   'HEAT':{page:'heat',label:'Heatmap'},
+  'FIT':{page:'fit',label:'Fixed Income'},
   'PRED':{page:'pred',label:'Prediction Markets'},
   'CHAT':{page:'chat',label:'AI Chat'},
+  'LEARN':{page:'learn',label:'Learn'},
   'TOP':{page:'top',label:'Top News'},
   'NEWS':{page:'news',label:'Newsletters'},
 };
@@ -2068,9 +2186,14 @@ function navigateTo(page){
   } else if(page==='glco'){
     document.getElementById('cmdHint').textContent='W22: Home | W | WEI | FX';
     if(!glcoInitialized){glcoInitialized=true;loadGLCO();}
+  } else if(page==='fit'){
+    document.getElementById('cmdHint').textContent='W22: Home | W | WIRP | WEI';
+    if(!fitInitialized){fitInitialized=true;loadFIT();}
   } else if(page==='pred'){
     document.getElementById('cmdHint').textContent='W22: Home | W | TOP | CHAT';
     if(!predInitialized){predInitialized=true;loadPRED();}
+  } else if(page==='learn'){
+    document.getElementById('cmdHint').textContent='W22: Home';
   } else if(page==='chat'){
     document.getElementById('cmdHint').textContent='W22: Home | W | TOP';
     setTimeout(()=>document.getElementById('chatInput').focus(),100);
@@ -2171,6 +2294,7 @@ const refreshTargets={
   fx:{load:()=>loadFX(), status:'fxStatus'},
   glco:{load:()=>loadGLCO(), status:'glcoStatus'},
   heat:{load:()=>loadHEAT(), status:'heatStatus'},
+  fit:{load:()=>loadFIT(), status:'fitStatus'},
   pred:{load:()=>loadPRED(), status:'predStatus'},
 };
 setInterval(()=>{
@@ -2713,6 +2837,101 @@ function renderTOP(){
       <div class="news-title"><a href="${a.link}" target="_blank" rel="noopener">${a.title}</a></div>
       ${a.desc?`<div class="news-desc">${a.desc}</div>`:''}`;
     el.appendChild(div);
+  });
+}
+
+/* ========== FIT ========== */
+let fitCurveChart=null;
+
+async function loadFIT(){
+  document.getElementById('fitStatus').textContent='Loading...';
+  try{
+    const res=await fetch(`${API}/fit`);
+    const data=await res.json();
+    if(data.error){document.getElementById('fitStatus').textContent='Error';return;}
+    renderFIT(data);
+    document.getElementById('fitStatus').textContent='';
+  }catch(e){
+    document.getElementById('fitStatus').textContent='Error';
+  }
+}
+
+function renderFIT(data){
+  // yield curve chart
+  const curve=data.curve||[];
+  if(curve.length&&fitCurveChart){fitCurveChart.destroy();}
+  if(curve.length){
+    const ctx=document.getElementById('fitCurveChart').getContext('2d');
+    const labels=curve.map(c=>c.tenor);
+    const values=curve.map(c=>c.yield);
+    const isInverted=values[0]>values[values.length-1];
+    const color=isInverted?'#ff3d3d':'#00c853';
+    fitCurveChart=new Chart(ctx,{
+      type:'line',
+      data:{labels,datasets:[{
+        label:'US Treasury Yield Curve',
+        data:values,borderColor:color,borderWidth:2,pointBackgroundColor:color,pointRadius:5,pointHoverRadius:7,
+        fill:true,tension:.3,
+        backgroundColor:c=>{const g=c.chart.ctx.createLinearGradient(0,0,0,c.chart.height);g.addColorStop(0,isInverted?'rgba(255,61,61,.15)':'rgba(0,200,83,.15)');g.addColorStop(1,'rgba(0,0,0,0)');return g;},
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{backgroundColor:'#1a1a1a',borderColor:'#333',borderWidth:1,titleColor:'#888',bodyColor:'#e0e0e0',
+            titleFont:{family:'IBM Plex Mono',size:10},bodyFont:{family:'IBM Plex Mono',size:12},
+            callbacks:{label:c=>`  ${c.parsed.y.toFixed(3)}%`}},
+        },
+        scales:{
+          x:{grid:{color:'#1a1a1a'},ticks:{color:'#888',font:{family:'IBM Plex Mono',size:11,weight:'600'}},border:{color:'#222'}},
+          y:{position:'right',grid:{color:'#1a1a1a'},ticks:{color:'#555',font:{family:'IBM Plex Mono',size:10},callback:v=>v.toFixed(1)+'%'},border:{color:'#222'}},
+        }
+      }
+    });
+  }
+
+  // table
+  const tbody=document.getElementById('fitTableBody');
+  tbody.innerHTML='';
+  const groups=[
+    {name:'YIELDS',items:data.yields},
+    {name:'TREASURY FUTURES',items:data.futures},
+    {name:'TREASURY ETFs',items:data.etfs},
+  ];
+  groups.forEach(g=>{
+    if(!g.items||!g.items.length)return;
+    const hdr=document.createElement('tr');
+    hdr.className='group-header';
+    hdr.innerHTML=`<td colspan="8">&#9654; ${g.name} (${g.items.length})</td>`;
+    tbody.appendChild(hdr);
+    g.items.forEach(item=>{
+      const tr=document.createElement('tr');
+      tr.className='data-row';
+      const pc=item.d>0?'pos':item.d<0?'neg':'';
+      const isYield=item.group==='yields';
+      // for yields: changes in bps, for futures/etfs: changes in price
+      const fmtChg=v=>{
+        if(v==null)return '<span class="neutral">--</span>';
+        if(isYield){
+          const bps=v*100;
+          const cls=bps>0?'neg':bps<0?'pos':'neutral';
+          return `<span class="${cls}">${bps>0?'+':''}${bps.toFixed(1)} bp</span>`;
+        }
+        const cls=v>0?'pos':v<0?'neg':'neutral';
+        return `<span class="${cls}">${v>0?'+':''}${v.toFixed(2)}</span>`;
+      };
+      tr.innerHTML=`
+        <td style="text-align:left;color:var(--accent);font-weight:600">${item.tenor}</td>
+        <td style="text-align:left;color:var(--muted)">${item.name}</td>
+        <td class="price-cell ${pc}">${isYield?item.c.toFixed(3)+'%':item.c.toFixed(3)}</td>
+        <td>${fmtChg(item.d)}</td>
+        <td>${fPct(item.dp)}</td>
+        <td>${fmtChg(item.p5d)}</td>
+        <td>${fmtChg(item.p1m)}</td>
+        <td>${fmtChg(item.p3m)}</td>`;
+      tr.style.cursor='pointer';
+      tr.onclick=()=>openGlobalChart(item.ticker,item.name);
+      tbody.appendChild(tr);
+    });
   });
 }
 
