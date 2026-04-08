@@ -124,7 +124,20 @@
   @keyframes flashUpdate{0%{background:rgba(240,165,0,.08)}100%{background:transparent}}
   .fu{animation:flashUpdate .8s ease;}
   #wirpTableBody td:first-child{text-align:left;color:var(--text);font-weight:500;}
-  .wirp-cb-btn.active,.eco-week-btn.active,.eco-imp-btn.active,.top-src-btn.active,.heat-idx-btn.active,.heat-per-btn.active{background:var(--accent)!important;color:#000!important;}
+  .wirp-cb-btn.active,.eco-week-btn.active,.eco-imp-btn.active,.top-src-btn.active,.heat-idx-btn.active,.heat-per-btn.active,.fa-tab-btn.active{background:var(--accent)!important;color:#000!important;}
+  .fa-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+  .fa-card{background:var(--bg2);border:1px solid var(--border);padding:10px 14px;}
+  .fa-card-title{color:var(--accent);font-size:9px;letter-spacing:1px;font-weight:600;margin-bottom:8px;}
+  .fa-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #161616;}
+  .fa-row:last-child{border-bottom:none;}
+  .fa-label{color:var(--muted);font-size:11px;}
+  .fa-val{color:var(--text);font-size:11px;font-weight:500;}
+  .fa-stmt-table{width:100%;border-collapse:collapse;}
+  .fa-stmt-table th{text-align:right;color:var(--header);font-size:10px;padding:6px 10px;border-bottom:1px solid var(--border);}
+  .fa-stmt-table th:first-child{text-align:left;}
+  .fa-stmt-table td{text-align:right;padding:5px 10px;font-size:11px;border-bottom:1px solid #161616;}
+  .fa-stmt-table td:first-child{text-align:left;color:var(--muted);}
+  .fa-stmt-table tr:hover{background:var(--bg3);}
   .heat-grid{display:flex;flex-wrap:wrap;gap:6px;}
   .heat-sector{flex:1;min-width:calc(33% - 6px);background:var(--bg2);border:1px solid var(--border);padding:0;overflow:hidden;}
   .heat-sector-header{padding:6px 8px;font-size:10px;font-weight:600;letter-spacing:1px;color:var(--accent);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;}
@@ -564,6 +577,73 @@
 </div>
 <div id="heatContent" style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);padding:8px;"></div>
 </div><!-- /page-heat -->
+
+<!-- FA PAGE -->
+<div class="page" id="page-fa">
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div><div class="logo" id="faLogo">W22 &#9654; FA</div><div class="tagline" id="faTagline">FUNDAMENTAL ANALYSIS</div></div>
+    <div style="display:flex;gap:4px;">
+      <button class="tb-btn fa-tab-btn active" onclick="switchFATab('overview',this)" style="font-size:10px;padding:3px 10px;">OVERVIEW</button>
+      <button class="tb-btn fa-tab-btn" onclick="switchFATab('income',this)" style="font-size:10px;padding:3px 10px;">INCOME STMT</button>
+      <button class="tb-btn fa-tab-btn" onclick="switchFATab('balance',this)" style="font-size:10px;padding:3px 10px;">BALANCE SHEET</button>
+      <button class="tb-btn fa-tab-btn" onclick="switchFATab('cashflow',this)" style="font-size:10px;padding:3px 10px;">CASH FLOW</button>
+    </div>
+  </div>
+</div>
+<div id="faContent" style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);padding:16px;"></div>
+</div><!-- /page-fa -->
+
+<!-- GP PAGE (Price Chart) -->
+<div class="page" id="page-gp">
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div><div class="logo" id="gpLogo">W22 &#9654; GP</div><div class="tagline" id="gpTagline">PRICE CHART</div></div>
+    <div class="period-btns">
+      <button class="period-btn" onclick="gpChangePeriod('1d',this)">1D</button>
+      <button class="period-btn" onclick="gpChangePeriod('3d',this)">3D</button>
+      <button class="period-btn" onclick="gpChangePeriod('1w',this)">1W</button>
+      <button class="period-btn" onclick="gpChangePeriod('1m',this)">1M</button>
+      <button class="period-btn active" onclick="gpChangePeriod('3m',this)">3M</button>
+      <button class="period-btn" onclick="gpChangePeriod('6m',this)">6M</button>
+      <button class="period-btn" onclick="gpChangePeriod('1y',this)">1Y</button>
+      <button class="period-btn" onclick="gpChangePeriod('5y',this)">5Y</button>
+      <button class="period-btn" onclick="gpChangePeriod('max',this)">MAX</button>
+    </div>
+  </div>
+</div>
+<div style="height:calc(100vh - 38px - 41px);display:flex;flex-direction:column;background:var(--bg);">
+  <div style="flex:1;padding:16px;position:relative;min-height:300px;">
+    <div class="chart-loading" id="gpChartLoading"><span class="spinner"></span></div>
+    <canvas id="gpPriceChart"></canvas>
+  </div>
+  <div class="chart-stats" id="gpChartStats"></div>
+</div>
+</div><!-- /page-gp -->
+
+<!-- DES PAGE (Description) -->
+<div class="page" id="page-des">
+<div class="topbar">
+  <div><div class="logo" id="desLogo">W22 &#9654; DES</div><div class="tagline" id="desTagline">COMPANY DESCRIPTION</div></div>
+</div>
+<div id="desContent" style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);padding:16px 24px;"></div>
+</div><!-- /page-des -->
+
+<!-- EVT PAGE (Events) -->
+<div class="page" id="page-evt">
+<div class="topbar">
+  <div><div class="logo" id="evtLogo">W22 &#9654; EVT</div><div class="tagline" id="evtTagline">EVENTS &amp; EARNINGS</div></div>
+</div>
+<div id="evtContent" style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);padding:16px 24px;"></div>
+</div><!-- /page-evt -->
+
+<!-- CN PAGE (Company News) -->
+<div class="page" id="page-cn">
+<div class="topbar">
+  <div><div class="logo" id="cnLogo">W22 &#9654; CN</div><div class="tagline" id="cnTagline">COMPANY NEWS</div></div>
+</div>
+<div id="cnContent" style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);padding:0 24px;"></div>
+</div><!-- /page-cn -->
 
 <!-- TOP PAGE -->
 <div class="page" id="page-top">
@@ -1603,16 +1683,76 @@ function handleCmd(e){
   execCmd(raw);
 }
 
+let loadedTicker=null;
+
 function execCmd(cmd){
-  const c=COMMANDS[cmd.toUpperCase()];
+  const upper=cmd.toUpperCase().trim();
+  const parts=upper.split(/\s+/);
+
+  // handle LOAD <TICKER> or <TICKER> <SUBCMD>
+  // sub-commands when a ticker is loaded: GP, DES, FA, EVT
+  const securityCmds=['GP','DES','FA','EVT','CN'];
+
+  // "LOAD AAPL" or "AAPL" followed by sub-command
+  if(parts[0]==='LOAD'&&parts[1]){
+    loadedTicker=parts[1];
+    document.getElementById('cmdHint').textContent=`${loadedTicker} loaded | GP DES FA EVT`;
+    // default to GP (chart)
+    execSecurityCmd(loadedTicker,'GP');
+    return;
+  }
+
+  // if first word is a sub-command and we have a loaded ticker
+  if(securityCmds.includes(parts[0])&&loadedTicker){
+    execSecurityCmd(loadedTicker,parts[0]);
+    return;
+  }
+
+  // "FA AAPL" style - load ticker + go to FA
+  if(securityCmds.includes(parts[0])&&parts[1]){
+    loadedTicker=parts[1];
+    execSecurityCmd(loadedTicker,parts[0]);
+    return;
+  }
+
+  // check known page commands
+  const c=COMMANDS[upper];
   if(c){
+    loadedTicker=null;
     navigateTo(c.page);
-  } else {
-    // unknown command - flash the input red briefly
-    const inp=document.getElementById('cmdInput');
-    inp.style.color='var(--red)';
-    inp.value=`Unknown: ${cmd}`;
-    setTimeout(()=>{inp.style.color='';inp.value='';},800);
+    return;
+  }
+
+  // assume it's a ticker - load it and show GP
+  if(/^[A-Z0-9.\-=]{1,10}$/.test(upper)&&!upper.includes(' ')){
+    loadedTicker=upper;
+    execSecurityCmd(upper,'GP');
+    return;
+  }
+
+  const inp=document.getElementById('cmdInput');
+  inp.style.color='var(--red)';
+  inp.value=`Unknown: ${cmd}`;
+  setTimeout(()=>{inp.style.color='';inp.value='';},800);
+}
+
+function execSecurityCmd(ticker,cmd){
+  document.getElementById('cmdHint').textContent=`${ticker} | GP DES FA EVT CN | W22: Home`;
+  if(cmd==='GP'){
+    navigateTo('gp');
+    loadGP(ticker);
+  } else if(cmd==='DES'){
+    navigateTo('des');
+    loadDES(ticker);
+  } else if(cmd==='FA'){
+    navigateTo('fa');
+    loadFA(ticker);
+  } else if(cmd==='EVT'){
+    navigateTo('evt');
+    loadEVT(ticker);
+  } else if(cmd==='CN'){
+    navigateTo('cn');
+    loadCN(ticker);
   }
 }
 
@@ -1647,6 +1787,8 @@ function navigateTo(page){
   } else if(page==='fx'){
     document.getElementById('cmdHint').textContent='W22: Home | W | WEI | GLCO';
     if(!fxInitialized){fxInitialized=true;loadFX();}
+  } else if(page==='fa'){
+    document.getElementById('cmdHint').textContent='W22: Home | W | WEI';
   } else if(page==='heat'){
     document.getElementById('cmdHint').textContent='W22: Home | W | WEI | GLCO';
     if(!heatInitialized){heatInitialized=true;loadHEAT();}
@@ -2186,6 +2328,326 @@ function renderTOP(){
       ${a.desc?`<div class="news-desc">${a.desc}</div>`:''}`;
     el.appendChild(div);
   });
+}
+
+/* ========== CN (Company News) ========== */
+async function loadCN(ticker){
+  const el=document.getElementById('cnContent');
+  el.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)"><span class="spinner"></span></div>';
+  document.getElementById('cnLogo').innerHTML='W22 &#9654; CN: '+ticker;
+  try{
+    const res=await fetch(`${API}/cn/${ticker}`);
+    const d=await res.json();
+    if(d.error){el.innerHTML=`<div style="padding:40px;color:var(--red)">${d.error}</div>`;return;}
+    document.getElementById('cnTagline').textContent=`${ticker} · Company News`;
+    const articles=d.articles||[];
+    if(!articles.length){el.innerHTML='<div style="padding:40px;color:var(--muted)">No news found</div>';return;}
+    el.innerHTML='';
+    articles.forEach(a=>{
+      let dateStr='';
+      if(a.date){
+        try{
+          const dt=new Date(a.date);
+          dateStr=fmt_dd_mmm_yy(dt)+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false});
+        }catch(e){dateStr=a.date;}
+      }
+      const div=document.createElement('div');
+      div.className='news-item';
+      div.innerHTML=`
+        <div><span class="news-source news-source-default">${a.source}</span><span class="news-time">${dateStr}</span></div>
+        <div class="news-title"><a href="${a.url}" target="_blank" rel="noopener">${a.title}</a></div>
+        ${a.summary?`<div class="news-desc">${a.summary}</div>`:''}`;
+      el.appendChild(div);
+    });
+  }catch(e){el.innerHTML='<div style="padding:40px;color:var(--red)">Error</div>';}
+}
+
+/* ========== GP (full-page chart) ========== */
+let gpChart=null, gpTicker=null, gpPeriod='3m';
+
+function loadGP(ticker){
+  gpTicker=ticker;gpPeriod='3m';
+  document.getElementById('gpLogo').innerHTML='W22 &#9654; GP: '+ticker;
+  document.getElementById('gpChartStats').innerHTML='';
+  // reset period buttons
+  document.querySelectorAll('#page-gp .period-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#page-gp .period-btn')[4].classList.add('active');
+  renderGPChart(ticker,gpPeriod);
+}
+
+async function gpChangePeriod(period,btn){
+  gpPeriod=period;
+  document.querySelectorAll('#page-gp .period-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(gpTicker)await renderGPChart(gpTicker,period);
+}
+
+async function renderGPChart(ticker,period){
+  const loadingEl=document.getElementById('gpChartLoading');
+  loadingEl.style.display='flex';
+  try{
+    const res=await fetch(`${API}/candles/${encodeURIComponent(ticker)}?p=${period}`);
+    const data=await res.json();
+    loadingEl.style.display='none';
+    if(!data.c||data.s==='no_data'){
+      document.getElementById('gpChartStats').innerHTML='<div class="stat" style="grid-column:span 3"><div class="stat-label" style="color:var(--red)">No data</div></div>';
+      return;
+    }
+    const closes=data.c,highs=data.h,lows=data.l,volumes=data.v||[];
+    const axis=buildAxisConfig(data.t,period);
+    const isUp=closes[closes.length-1]>=closes[0];
+    const color=isUp?'#00c853':'#ff3d3d';
+    if(gpChart)gpChart.destroy();
+    const ctx=document.getElementById('gpPriceChart').getContext('2d');
+    const tickSet=new Set(axis.tickIndices);
+    gpChart=new Chart(ctx,{
+      type:'line',plugins:[daySepPlugin],
+      data:{labels:axis.labels,datasets:[{data:closes,borderColor:color,borderWidth:1.5,pointRadius:0,fill:true,
+        backgroundColor:c=>{const g=c.chart.ctx.createLinearGradient(0,0,0,c.chart.height);g.addColorStop(0,isUp?'rgba(0,200,83,.12)':'rgba(255,61,61,.12)');g.addColorStop(1,'rgba(0,0,0,0)');return g;},tension:.2}]},
+      options:{responsive:true,maintainAspectRatio:false,_dayBounds:axis.dayBounds,
+        plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,backgroundColor:'#1a1a1a',borderColor:'#333',borderWidth:1,titleColor:'#888',bodyColor:'#e0e0e0',
+          titleFont:{family:'IBM Plex Mono',size:10},bodyFont:{family:'IBM Plex Mono',size:12},
+          callbacks:{title:tipCtx=>{const d=new Date(data.t[tipCtx[0].dataIndex]*1000);return axis.tooltip(d);},
+            label:c=>` $${c.parsed.y.toFixed(2)}`}}},
+        scales:{x:{grid:{color:i=>tickSet.has(i)?'#1e1e1e':'transparent'},
+            ticks:{color:'#555',font:{family:'IBM Plex Mono',size:9},minRotation:45,maxRotation:45,autoSkip:false,
+              callback:function(val,i){return tickSet.has(i)?axis.labels[i]:null;}},border:{color:'#222'}},
+          y:{position:'right',grid:{color:'#161616'},ticks:{color:'#555',font:{family:'IBM Plex Mono',size:9}},border:{color:'#222'}}}}
+    });
+    const high=Math.max(...highs.filter(v=>v));
+    const low=Math.min(...lows.filter(v=>v));
+    const chg=(closes[closes.length-1]-closes[0])/closes[0]*100;
+    const rsi14=calcRSI(closes,14);
+    const rsi9=calcRSI(closes,9);
+    document.getElementById('gpChartStats').innerHTML=`
+      <div class="stat"><div class="stat-label">CURRENT</div><div class="stat-value">${fp(closes[closes.length-1])}</div></div>
+      <div class="stat"><div class="stat-label">PERIOD CHG</div><div class="stat-value ${chg>=0?'pos':'neg'}">${chg>=0?'+':''}${chg.toFixed(2)}%</div></div>
+      <div class="stat"><div class="stat-label">RSI 9 / 14</div><div class="stat-value">${rsi9!=null?rsi9.toFixed(1):'--'} / ${rsi14!=null?rsi14.toFixed(1):'--'}</div></div>
+      <div class="stat"><div class="stat-label">PERIOD HIGH</div><div class="stat-value pos">${fp(high)}</div></div>
+      <div class="stat"><div class="stat-label">PERIOD LOW</div><div class="stat-value neg">${fp(low)}</div></div>
+      <div class="stat"><div class="stat-label">AVG VOL</div><div class="stat-value neutral">${volumes.length?fVol(volumes.reduce((a,b)=>a+b,0)/volumes.length):'--'}</div></div>`;
+    document.getElementById('gpTagline').textContent=`${ticker} · ${isUp?'+':''}${chg.toFixed(2)}%`;
+  }catch(e){loadingEl.style.display='none';}
+}
+
+/* ========== DES (Company Description) ========== */
+async function loadDES(ticker){
+  const el=document.getElementById('desContent');
+  el.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)"><span class="spinner"></span></div>';
+  document.getElementById('desLogo').innerHTML='W22 &#9654; DES: '+ticker;
+  try{
+    const res=await fetch(`${API}/des/${ticker}`);
+    const d=await res.json();
+    if(d.error){el.innerHTML=`<div style="padding:40px;color:var(--red)">${d.error}</div>`;return;}
+    document.getElementById('desTagline').textContent=`${d.name} · ${d.sector||''} · ${d.industry||''}`;
+    el.innerHTML=`
+      <div class="fa-grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px;">
+        <div class="fa-card">
+          <div class="fa-card-title">COMPANY INFO</div>
+          <div class="fa-row"><span class="fa-label">Name</span><span class="fa-val">${d.name||'--'}</span></div>
+          <div class="fa-row"><span class="fa-label">Sector</span><span class="fa-val">${d.sector||'--'}</span></div>
+          <div class="fa-row"><span class="fa-label">Industry</span><span class="fa-val">${d.industry||'--'}</span></div>
+          <div class="fa-row"><span class="fa-label">Exchange</span><span class="fa-val">${d.exchange||'--'}</span></div>
+          <div class="fa-row"><span class="fa-label">Currency</span><span class="fa-val">${d.currency||'--'}</span></div>
+          <div class="fa-row"><span class="fa-label">Type</span><span class="fa-val">${d.quoteType||'--'}</span></div>
+        </div>
+        <div class="fa-card">
+          <div class="fa-card-title">DETAILS</div>
+          <div class="fa-row"><span class="fa-label">Market Cap</span><span class="fa-val">${d.marketCap?fmtNum(d.marketCap):'--'}</span></div>
+          <div class="fa-row"><span class="fa-label">Employees</span><span class="fa-val">${d.employees?fmtNum(d.employees,0):'--'}</span></div>
+          <div class="fa-row"><span class="fa-label">HQ</span><span class="fa-val">${[d.city,d.state,d.country].filter(Boolean).join(', ')||'--'}</span></div>
+          <div class="fa-row"><span class="fa-label">Website</span><span class="fa-val">${d.website?'<a href="'+d.website+'" target="_blank" style="color:var(--blue)">'+d.website+'</a>':'--'}</span></div>
+        </div>
+      </div>
+      <div class="fa-card">
+        <div class="fa-card-title">BUSINESS DESCRIPTION</div>
+        <p style="color:var(--text);font-size:12px;line-height:1.7;padding:8px 0;">${d.description||'No description available.'}</p>
+      </div>`;
+  }catch(e){el.innerHTML='<div style="padding:40px;color:var(--red)">Error</div>';}
+}
+
+/* ========== EVT (Events & Earnings) ========== */
+async function loadEVT(ticker){
+  const el=document.getElementById('evtContent');
+  el.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)"><span class="spinner"></span></div>';
+  document.getElementById('evtLogo').innerHTML='W22 &#9654; EVT: '+ticker;
+  try{
+    const res=await fetch(`${API}/evt/${ticker}`);
+    const d=await res.json();
+    if(d.error){el.innerHTML=`<div style="padding:40px;color:var(--red)">${d.error}</div>`;return;}
+    document.getElementById('evtTagline').textContent=`${d.name} · Events & Earnings`;
+    let html='<div style="display:flex;gap:16px;height:calc(100vh - 38px - 41px - 32px);">';
+    // left: upcoming events
+    html+=`<div class="fa-card" style="min-width:280px;"><div class="fa-card-title">UPCOMING EVENTS</div>`;
+    if(d.earningsDate)html+=`<div class="fa-row"><span class="fa-label">Next Earnings</span><span class="fa-val">${d.earningsDate}</span></div>`;
+    if(d.exDividendDate)html+=`<div class="fa-row"><span class="fa-label">Ex-Dividend</span><span class="fa-val">${d.exDividendDate}</span></div>`;
+    if(d.dividendDate)html+=`<div class="fa-row"><span class="fa-label">Dividend Date</span><span class="fa-val">${d.dividendDate}</span></div>`;
+    if(d.calendar){
+      Object.entries(d.calendar).forEach(([k,v])=>{
+        if(v&&v!=='None')html+=`<div class="fa-row"><span class="fa-label">${k}</span><span class="fa-val">${v}</span></div>`;
+      });
+    }
+    html+=`</div>`;
+    // right: earnings history
+    html+=`<div class="fa-card" style="flex:1;"><div class="fa-card-title">EARNINGS HISTORY</div>`;
+    if(d.earningsHistory&&d.earningsHistory.length){
+      html+=`<table class="fa-stmt-table"><thead><tr><th>DATE</th><th>EPS EST</th><th>EPS ACTUAL</th><th>SURPRISE</th></tr></thead><tbody>`;
+      d.earningsHistory.forEach(e=>{
+        const surpCls=e.surprise!=null?(e.surprise>0?'pos':e.surprise<0?'neg':''):'';
+        const dt=new Date(e.date+'T12:00:00');
+        const dateStr=isNaN(dt)?e.date:fmt_dd_mmm_yy(dt);
+        html+=`<tr>
+          <td>${dateStr}</td>
+          <td>${e.epsEstimate!=null?e.epsEstimate.toFixed(2):'--'}</td>
+          <td>${e.epsActual!=null?e.epsActual.toFixed(2):'--'}</td>
+          <td class="${surpCls}">${e.surprise!=null?(e.surprise>0?'+':'')+e.surprise.toFixed(1)+'%':'--'}</td>
+        </tr>`;
+      });
+      html+=`</tbody></table>`;
+    } else {
+      html+=`<div style="color:var(--muted);padding:8px 0;">No earnings history available</div>`;
+    }
+    html+=`</div></div>`;
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<div style="padding:40px;color:var(--red)">Error</div>';}
+}
+
+/* ========== FA ========== */
+let faData=null;
+let faTab='overview';
+
+function switchFATab(tab,btn){
+  faTab=tab;
+  document.querySelectorAll('.fa-tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(faData)renderFA();
+}
+
+async function loadFA(ticker){
+  faTab='overview';
+  document.querySelectorAll('.fa-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.fa-tab-btn').classList.add('active');
+  const el=document.getElementById('faContent');
+  el.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)"><span class="spinner"></span> Loading '+ticker+'...</div>';
+  document.getElementById('faLogo').innerHTML='W22 &#9654; FA: '+ticker;
+  try{
+    const res=await fetch(`${API}/fa/${ticker}`);
+    const data=await res.json();
+    if(data.error){el.innerHTML=`<div style="padding:40px;color:var(--red)">${data.error}</div>`;return;}
+    faData=data;
+    document.getElementById('faTagline').textContent=`${data.ratios.name} · ${data.ratios.sector||''} · ${data.ratios.industry||''}`;
+    renderFA();
+  }catch(e){
+    el.innerHTML='<div style="padding:40px;color:var(--red)">Error loading data</div>';
+  }
+}
+
+function fmtNum(v,dec=2){
+  if(v==null||isNaN(v))return '--';
+  if(Math.abs(v)>=1e12)return (v/1e12).toFixed(1)+'T';
+  if(Math.abs(v)>=1e9)return (v/1e9).toFixed(1)+'B';
+  if(Math.abs(v)>=1e6)return (v/1e6).toFixed(1)+'M';
+  if(Math.abs(v)>=1e3)return (v/1e3).toFixed(1)+'K';
+  return Number(v).toFixed(dec);
+}
+function fmtPct(v){if(v==null)return '--';return (v*100).toFixed(1)+'%';}
+function fmtRatio(v){if(v==null)return '--';return Number(v).toFixed(2);}
+
+function renderFA(){
+  const el=document.getElementById('faContent');
+  const r=faData.ratios;
+  if(faTab==='overview'){
+    el.innerHTML=`
+      <div class="fa-grid">
+        <div class="fa-card">
+          <div class="fa-card-title">VALUATION</div>
+          <div class="fa-row"><span class="fa-label">Market Cap</span><span class="fa-val">${fmtNum(r.marketCap)}</span></div>
+          <div class="fa-row"><span class="fa-label">Trailing P/E</span><span class="fa-val">${fmtRatio(r.trailingPE)}</span></div>
+          <div class="fa-row"><span class="fa-label">Forward P/E</span><span class="fa-val">${fmtRatio(r.forwardPE)}</span></div>
+          <div class="fa-row"><span class="fa-label">P/B</span><span class="fa-val">${fmtRatio(r.priceToBook)}</span></div>
+          <div class="fa-row"><span class="fa-label">P/S</span><span class="fa-val">${fmtRatio(r.priceToSales)}</span></div>
+          <div class="fa-row"><span class="fa-label">EV/EBITDA</span><span class="fa-val">${fmtRatio(r.evToEbitda)}</span></div>
+          <div class="fa-row"><span class="fa-label">EV/Revenue</span><span class="fa-val">${fmtRatio(r.evToRevenue)}</span></div>
+          <div class="fa-row"><span class="fa-label">Beta</span><span class="fa-val">${fmtRatio(r.beta)}</span></div>
+        </div>
+        <div class="fa-card">
+          <div class="fa-card-title">PROFITABILITY</div>
+          <div class="fa-row"><span class="fa-label">Revenue</span><span class="fa-val">${fmtNum(r.totalRevenue)}</span></div>
+          <div class="fa-row"><span class="fa-label">Net Income</span><span class="fa-val">${fmtNum(r.netIncome)}</span></div>
+          <div class="fa-row"><span class="fa-label">EBITDA</span><span class="fa-val">${fmtNum(r.ebitda)}</span></div>
+          <div class="fa-row"><span class="fa-label">Free Cash Flow</span><span class="fa-val">${fmtNum(r.freeCashflow)}</span></div>
+          <div class="fa-row"><span class="fa-label">Gross Margin</span><span class="fa-val">${fmtPct(r.grossMargins)}</span></div>
+          <div class="fa-row"><span class="fa-label">Operating Margin</span><span class="fa-val">${fmtPct(r.operatingMargins)}</span></div>
+          <div class="fa-row"><span class="fa-label">Net Margin</span><span class="fa-val">${fmtPct(r.profitMargins)}</span></div>
+          <div class="fa-row"><span class="fa-label">Dividend Yield</span><span class="fa-val">${r.dividendYield!=null?fmtPct(r.dividendYield):'--'}</span></div>
+        </div>
+        <div class="fa-card">
+          <div class="fa-card-title">GROWTH & HEALTH</div>
+          <div class="fa-row"><span class="fa-label">Revenue Growth</span><span class="fa-val">${fmtPct(r.revenueGrowth)}</span></div>
+          <div class="fa-row"><span class="fa-label">Earnings Growth</span><span class="fa-val">${fmtPct(r.earningsGrowth)}</span></div>
+          <div class="fa-row"><span class="fa-label">ROE</span><span class="fa-val">${fmtPct(r.returnOnEquity)}</span></div>
+          <div class="fa-row"><span class="fa-label">ROA</span><span class="fa-val">${fmtPct(r.returnOnAssets)}</span></div>
+          <div class="fa-row"><span class="fa-label">D/E Ratio</span><span class="fa-val">${fmtRatio(r.debtToEquity)}</span></div>
+          <div class="fa-row"><span class="fa-label">Current Ratio</span><span class="fa-val">${fmtRatio(r.currentRatio)}</span></div>
+          <div class="fa-row"><span class="fa-label">Total Debt</span><span class="fa-val">${fmtNum(r.totalDebt)}</span></div>
+          <div class="fa-row"><span class="fa-label">Total Cash</span><span class="fa-val">${fmtNum(r.totalCash)}</span></div>
+        </div>
+      </div>
+      <div class="fa-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="fa-card">
+          <div class="fa-card-title">52-WEEK RANGE</div>
+          <div class="fa-row"><span class="fa-label">52W High</span><span class="fa-val pos">${fmtRatio(r.fiftyTwoWeekHigh)}</span></div>
+          <div class="fa-row"><span class="fa-label">52W Low</span><span class="fa-val neg">${fmtRatio(r.fiftyTwoWeekLow)}</span></div>
+        </div>
+        <div class="fa-card">
+          <div class="fa-card-title">COMPANY</div>
+          <div class="fa-row"><span class="fa-label">Sector</span><span class="fa-val">${r.sector||'--'}</span></div>
+          <div class="fa-row"><span class="fa-label">Industry</span><span class="fa-val">${r.industry||'--'}</span></div>
+          <div class="fa-row"><span class="fa-label">Employees</span><span class="fa-val">${r.employees?fmtNum(r.employees,0):'--'}</span></div>
+        </div>
+      </div>`;
+  } else {
+    // financial statement tab
+    const stmtMap={income:faData.income,balance:faData.balance,cashflow:faData.cashflow};
+    const titles={income:'INCOME STATEMENT',balance:'BALANCE SHEET',cashflow:'CASH FLOW STATEMENT'};
+    const stmt=stmtMap[faTab];
+    if(!stmt||!stmt.dates){el.innerHTML='<div style="padding:40px;color:var(--muted)">No data</div>';return;}
+    let tbl=`<table class="fa-stmt-table"><thead><tr><th>LINE ITEM</th>`;
+    stmt.dates.forEach(d=>{
+      const dt=new Date(d+'T12:00:00');
+      tbl+=`<th>${fmt_dd_mmm_yy(dt)}</th>`;
+    });
+    tbl+=`</tr></thead><tbody>`;
+    // key line items per statement
+    const keyItems={
+      income:['Total Revenue','Cost Of Revenue','Gross Profit','Operating Expense','Operating Income',
+              'EBITDA','EBIT','Net Interest Income','Interest Expense','Pretax Income',
+              'Tax Provision','Net Income','Net Income From Continuing Operation Net Minority Interest',
+              'Diluted EPS','Basic EPS','Diluted Average Shares'],
+      balance:['Total Assets','Current Assets','Cash And Cash Equivalents','Total Debt','Current Debt',
+               'Long Term Debt','Total Liabilities Current','Total Liabilities Net Minority Interest',
+               'Stockholders Equity','Common Stock','Retained Earnings','Working Capital',
+               'Net Tangible Assets','Invested Capital','Net Debt','Share Issued','Ordinary Shares Number'],
+      cashflow:['Operating Cash Flow','Capital Expenditure','Free Cash Flow','Investing Cash Flow',
+                'Financing Cash Flow','Repurchase Of Capital Stock','Issuance Of Debt','Repayment Of Debt',
+                'Common Stock Dividend Paid','Net Income From Continuing Operations',
+                'Depreciation And Amortization','Change In Working Capital',
+                'End Cash Position','Beginning Cash Position'],
+    };
+    const items=keyItems[faTab]||Object.keys(stmt.data);
+    items.forEach(item=>{
+      const vals=stmt.data[item];
+      if(!vals)return;
+      tbl+=`<tr><td>${item}</td>`;
+      vals.forEach(v=>{
+        const cls=v!=null&&v<0?'neg':'';
+        tbl+=`<td class="${cls}">${v!=null?fmtNum(v):'--'}</td>`;
+      });
+      tbl+=`</tr>`;
+    });
+    tbl+=`</tbody></table>`;
+    el.innerHTML=tbl;
+  }
 }
 
 /* ========== HEAT ========== */
