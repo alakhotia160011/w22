@@ -124,7 +124,7 @@
   @keyframes flashUpdate{0%{background:rgba(240,165,0,.08)}100%{background:transparent}}
   .fu{animation:flashUpdate .8s ease;}
   #wirpTableBody td:first-child{text-align:left;color:var(--text);font-weight:500;}
-  .wirp-cb-btn.active,.eco-week-btn.active,.eco-imp-btn.active,.top-src-btn.active,.heat-idx-btn.active,.heat-per-btn.active,.fa-tab-btn.active{background:var(--accent)!important;color:#000!important;}
+  .wirp-cb-btn.active,.eco-week-btn.active,.eco-imp-btn.active,.top-src-btn.active,.heat-idx-btn.active,.heat-per-btn.active,.fa-tab-btn.active,.hs-mode-btn.active,.hs-top-btn.active,.gp-mode-btn.active{background:var(--accent)!important;color:#000!important;}
   .fa-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
   .fa-card{background:var(--bg2);border:1px solid var(--border);padding:10px 14px;}
   .fa-card-title{color:var(--accent);font-size:9px;letter-spacing:1px;font-weight:600;margin-bottom:8px;}
@@ -254,6 +254,10 @@
       <div class="home-cmd" onclick="execCmd('HEAT')">
         <span class="home-cmd-key">HEAT &lt;GO&gt;</span>
         <span class="home-cmd-desc">Sector Heatmap (S&amp;P 500, NASDAQ)</span>
+      </div>
+      <div class="home-cmd" onclick="execCmd('HS')">
+        <span class="home-cmd-key">HS &lt;T1&gt; &lt;T2&gt;</span>
+        <span class="home-cmd-desc">Historical Spread (e.g. HS AAPL MSFT)</span>
       </div>
       <div class="home-cmd" onclick="execCmd('TOP')">
         <span class="home-cmd-key">TOP &lt;GO&gt;</span>
@@ -610,6 +614,16 @@
       <button class="period-btn" onclick="gpChangePeriod('5y',this)">5Y</button>
       <button class="period-btn" onclick="gpChangePeriod('max',this)">MAX</button>
     </div>
+    <div style="display:flex;gap:4px;">
+      <button class="tb-btn gp-mode-btn active" onclick="gpChangeMode('price',this)" style="font-size:10px;padding:3px 10px;">$ PRICE</button>
+      <button class="tb-btn gp-mode-btn" onclick="gpChangeMode('norm',this)" style="font-size:10px;padding:3px 10px;">NORM 100</button>
+    </div>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <span style="color:var(--muted);font-size:10px;">COMPARE:</span>
+      <input id="gpCompareInput" class="search-box" style="width:70px;font-size:10px;" placeholder="+ TICKER" onkeydown="if(event.key==='Enter')gpAddCompare()"/>
+      <button class="tb-btn" onclick="gpAddCompare()" style="font-size:10px;padding:3px 8px;">ADD</button>
+      <button class="tb-btn" onclick="gpClearCompare()" style="font-size:10px;padding:3px 8px;">CLEAR</button>
+    </div>
   </div>
 </div>
 <div style="height:calc(100vh - 38px - 41px);display:flex;flex-direction:column;background:var(--bg);">
@@ -641,9 +655,51 @@
 <div class="page" id="page-cn">
 <div class="topbar">
   <div><div class="logo" id="cnLogo">W22 &#9654; CN</div><div class="tagline" id="cnTagline">COMPANY NEWS</div></div>
+  <button class="tb-btn" onclick="if(loadedTicker)loadCN(loadedTicker)">&#8635; REFRESH</button>
 </div>
 <div id="cnContent" style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);padding:0 24px;"></div>
 </div><!-- /page-cn -->
+
+<!-- HS PAGE (Historical Spread) -->
+<div class="page" id="page-hs">
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="logo">W22 &#9654; HS</div>
+      <input id="hsTicker1" class="search-box" style="width:70px;text-align:center;font-weight:600;color:var(--blue);" placeholder="TICKER" onkeydown="if(event.key==='Enter')hsGoFromInputs()"/>
+      <button class="tb-btn" onclick="hsFlip()" style="font-size:10px;padding:3px 6px;" title="Flip tickers">&#8644;</button>
+      <input id="hsTicker2" class="search-box" style="width:70px;text-align:center;font-weight:600;color:var(--blue);" placeholder="TICKER" onkeydown="if(event.key==='Enter')hsGoFromInputs()"/>
+      <button class="tb-btn" onclick="hsGoFromInputs()" style="font-size:10px;padding:3px 10px;">GO</button>
+    </div>
+    <div class="period-btns">
+      <button class="period-btn" onclick="hsChangePeriod('1m',this)">1M</button>
+      <button class="period-btn" onclick="hsChangePeriod('3m',this)">3M</button>
+      <button class="period-btn" onclick="hsChangePeriod('6m',this)">6M</button>
+      <button class="period-btn active" onclick="hsChangePeriod('1y',this)">1Y</button>
+      <button class="period-btn" onclick="hsChangePeriod('2y',this)">2Y</button>
+      <button class="period-btn" onclick="hsChangePeriod('5y',this)">5Y</button>
+      <button class="period-btn" onclick="hsChangePeriod('max',this)">MAX</button>
+    </div>
+    <div style="display:flex;gap:4px;">
+      <button class="tb-btn hs-top-btn active" onclick="hsChangeTop('norm',this)" style="font-size:10px;padding:3px 10px;">NORM 100</button>
+      <button class="tb-btn hs-top-btn" onclick="hsChangeTop('price',this)" style="font-size:10px;padding:3px 10px;">$ PRICE</button>
+    </div>
+    <div style="display:flex;gap:4px;">
+      <button class="tb-btn hs-mode-btn active" onclick="hsChangeMode('subtract',this)" style="font-size:10px;padding:3px 10px;">SUBTRACT</button>
+      <button class="tb-btn hs-mode-btn" onclick="hsChangeMode('ratio',this)" style="font-size:10px;padding:3px 10px;">RATIO</button>
+      <button class="tb-btn hs-mode-btn" onclick="hsChangeMode('residual',this)" style="font-size:10px;padding:3px 10px;">RESIDUAL</button>
+    </div>
+  </div>
+</div>
+<div style="height:calc(100vh - 38px - 41px);display:flex;flex-direction:column;background:var(--bg);">
+  <div style="flex:1;padding:12px;position:relative;min-height:200px;border-bottom:1px solid var(--border);">
+    <canvas id="hsNormChart"></canvas>
+  </div>
+  <div style="flex:1;padding:12px;position:relative;min-height:200px;">
+    <canvas id="hsSpreadChart"></canvas>
+  </div>
+</div>
+</div><!-- /page-hs -->
 
 <!-- TOP PAGE -->
 <div class="page" id="page-top">
@@ -1689,8 +1745,19 @@ function execCmd(cmd){
   const upper=cmd.toUpperCase().trim();
   const parts=upper.split(/\s+/);
 
-  // handle LOAD <TICKER> or <TICKER> <SUBCMD>
-  // sub-commands when a ticker is loaded: GP, DES, FA, EVT
+  // HS command
+  if(parts[0]==='HS'){
+    navigateTo('hs');
+    if(parts.length>=3){
+      document.getElementById('hsTicker1').value=parts[1];
+      document.getElementById('hsTicker2').value=parts[2];
+      loadHS([parts[1],parts[2]]);
+    } else {
+      document.getElementById('hsTicker1').focus();
+    }
+    return;
+  }
+
   const securityCmds=['GP','DES','FA','EVT','CN'];
 
   // "LOAD AAPL" or "AAPL" followed by sub-command
@@ -1787,6 +1854,8 @@ function navigateTo(page){
   } else if(page==='fx'){
     document.getElementById('cmdHint').textContent='W22: Home | W | WEI | GLCO';
     if(!fxInitialized){fxInitialized=true;loadFX();}
+  } else if(page==='hs'){
+    document.getElementById('cmdHint').textContent='W22: Home | W | WEI | HEAT';
   } else if(page==='fa'){
     document.getElementById('cmdHint').textContent='W22: Home | W | WEI';
   } else if(page==='heat'){
@@ -2330,6 +2399,168 @@ function renderTOP(){
   });
 }
 
+/* ========== HS (Historical Spread) ========== */
+let hsNormChart=null, hsSpreadChart=null;
+let hsTickers=[], hsData=null, hsPeriod='1y', hsMode='subtract', hsTopMode='norm';
+const hsColors=['#4fc3f7','#f0a500','#00c853','#ff3d3d','#bb86fc','#ff6e40','#26c6da','#ec407a'];
+
+function hsGoFromInputs(){
+  const t1=document.getElementById('hsTicker1').value.trim().toUpperCase();
+  const t2=document.getElementById('hsTicker2').value.trim().toUpperCase();
+  if(!t1||!t2)return;
+  document.getElementById('hsTicker1').value=t1;
+  document.getElementById('hsTicker2').value=t2;
+  loadHS([t1,t2]);
+}
+function hsFlip(){
+  const el1=document.getElementById('hsTicker1');
+  const el2=document.getElementById('hsTicker2');
+  const tmp=el1.value;
+  el1.value=el2.value;
+  el2.value=tmp;
+  hsTickers=[el1.value.trim().toUpperCase(),el2.value.trim().toUpperCase()];
+  if(hsData)renderHS();
+}
+function hsChangePeriod(period,btn){
+  hsPeriod=period;
+  document.querySelectorAll('#page-hs .period-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(hsTickers.length)loadHS(hsTickers);
+}
+function hsChangeMode(mode,btn){
+  hsMode=mode;
+  document.querySelectorAll('.hs-mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(hsData)renderHS();
+}
+function hsChangeTop(mode,btn){
+  hsTopMode=mode;
+  document.querySelectorAll('.hs-top-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(hsData)renderHS();
+}
+
+async function loadHS(tickers){
+  hsTickers=tickers;
+  document.getElementById('hsTicker1').value=tickers[0]||'';
+  document.getElementById('hsTicker2').value=tickers[1]||'';
+  // clear charts
+  if(hsNormChart){hsNormChart.destroy();hsNormChart=null;}
+  if(hsSpreadChart){hsSpreadChart.destroy();hsSpreadChart=null;}
+  try{
+    const res=await fetch(`${API}/hs?tickers=${tickers.join(',')}&p=${hsPeriod}`);
+    const data=await res.json();
+    if(data.error){return;}
+    hsData=data;
+    renderHS();
+  }catch(e){}
+}
+
+function renderHS(){
+  const d=hsData;
+  const tickers=hsTickers.filter(t=>d.series[t]);
+  const timestamps=d.timestamps;
+  const labels=timestamps.map(ts=>{
+    const dt=new Date(ts*1000);
+    return timestamps.length>500?fmt_mmm_yy(dt):fmt_dd_mmm(dt);
+  });
+
+  // --- top chart: normalized or actual price ---
+  const useNorm=hsTopMode==='norm';
+  const normDatasets=tickers.map((t,i)=>({
+    label:t,
+    data:useNorm?d.series[t].norm:d.series[t].raw,
+    borderColor:hsColors[i%hsColors.length],
+    borderWidth:1.5,
+    pointRadius:0,
+    tension:.2,
+    fill:false,
+  }));
+
+  if(hsNormChart)hsNormChart.destroy();
+  const ctx1=document.getElementById('hsNormChart').getContext('2d');
+  hsNormChart=new Chart(ctx1,{
+    type:'line',
+    data:{labels,datasets:normDatasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'top',labels:{color:'#888',font:{family:'IBM Plex Mono',size:10},boxWidth:12,padding:12}},
+        tooltip:{mode:'index',intersect:false,backgroundColor:'#1a1a1a',borderColor:'#333',borderWidth:1,
+          titleColor:'#888',bodyColor:'#e0e0e0',titleFont:{family:'IBM Plex Mono',size:10},bodyFont:{family:'IBM Plex Mono',size:11},
+          callbacks:{
+            title:ctx=>{const dt=new Date(timestamps[ctx[0].dataIndex]*1000);return fmt_dd_mmm_yy(dt);},
+            label:ctx=>` ${ctx.dataset.label}: ${useNorm?ctx.parsed.y.toFixed(1):'$'+ctx.parsed.y.toFixed(2)}`
+          }},
+      },
+      scales:{
+        x:{grid:{color:'#161616'},ticks:{color:'#555',font:{family:'IBM Plex Mono',size:9},maxTicksLimit:10,minRotation:45,maxRotation:45},border:{color:'#222'}},
+        y:{grid:{color:'#161616'},ticks:{color:'#555',font:{family:'IBM Plex Mono',size:9},callback:v=>useNorm?v.toFixed(0):'$'+v.toFixed(0)},border:{color:'#222'},
+          title:{display:true,text:useNorm?'NORMALIZED (BASE 100)':'PRICE ($)',color:'#555',font:{family:'IBM Plex Mono',size:9}}}
+      }
+    }
+  });
+
+  // --- bottom chart: spread between first two tickers ---
+  if(tickers.length<2){
+    if(hsSpreadChart){hsSpreadChart.destroy();hsSpreadChart=null;}
+    return;
+  }
+  const raw0=d.series[tickers[0]].raw;
+  const raw1=d.series[tickers[1]].raw;
+  let spreadData=[];
+  let spreadLabel='';
+  if(hsMode==='subtract'){
+    spreadData=raw0.map((v,i)=>round4(v-raw1[i]));
+    spreadLabel=`${tickers[0]} - ${tickers[1]}`;
+  } else if(hsMode==='ratio'){
+    spreadData=raw0.map((v,i)=>round4(v/raw1[i]));
+    spreadLabel=`${tickers[0]} / ${tickers[1]}`;
+  } else {
+    // residual: normalized difference
+    const n0=d.series[tickers[0]].norm;
+    const n1=d.series[tickers[1]].norm;
+    spreadData=n0.map((v,i)=>round4(v-n1[i]));
+    spreadLabel=`${tickers[0]} - ${tickers[1]} (normalized)`;
+  }
+
+  function round4(v){return Math.round(v*10000)/10000;}
+
+  const isUp=spreadData[spreadData.length-1]>=spreadData[0];
+  const sColor=isUp?'#00c853':'#ff3d3d';
+
+  if(hsSpreadChart)hsSpreadChart.destroy();
+  const ctx2=document.getElementById('hsSpreadChart').getContext('2d');
+  hsSpreadChart=new Chart(ctx2,{
+    type:'line',
+    data:{labels,datasets:[{
+      label:spreadLabel,
+      data:spreadData,
+      borderColor:sColor,
+      borderWidth:1.5,
+      pointRadius:0,
+      fill:true,
+      backgroundColor:c=>{const g=c.chart.ctx.createLinearGradient(0,0,0,c.chart.height);g.addColorStop(0,isUp?'rgba(0,200,83,.1)':'rgba(255,61,61,.1)');g.addColorStop(1,'rgba(0,0,0,0)');return g;},
+      tension:.2,
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'top',labels:{color:'#888',font:{family:'IBM Plex Mono',size:10},boxWidth:12}},
+        tooltip:{mode:'index',intersect:false,backgroundColor:'#1a1a1a',borderColor:'#333',borderWidth:1,
+          titleColor:'#888',bodyColor:'#e0e0e0',titleFont:{family:'IBM Plex Mono',size:10},bodyFont:{family:'IBM Plex Mono',size:11},
+          callbacks:{
+            title:ctx=>{const dt=new Date(timestamps[ctx[0].dataIndex]*1000);return fmt_dd_mmm_yy(dt);},
+            label:ctx=>` ${ctx.parsed.y.toFixed(4)}`
+          }},
+      },
+      scales:{
+        x:{grid:{color:'#161616'},ticks:{color:'#555',font:{family:'IBM Plex Mono',size:9},maxTicksLimit:10,minRotation:45,maxRotation:45},border:{color:'#222'}},
+        y:{grid:{color:'#161616'},ticks:{color:'#555',font:{family:'IBM Plex Mono',size:9}},border:{color:'#222'},
+          title:{display:true,text:spreadLabel.toUpperCase(),color:'#555',font:{family:'IBM Plex Mono',size:9}}}
+      }
+    }
+  });
+}
+
 /* ========== CN (Company News) ========== */
 async function loadCN(ticker){
   const el=document.getElementById('cnContent');
@@ -2363,16 +2594,42 @@ async function loadCN(ticker){
 }
 
 /* ========== GP (full-page chart) ========== */
-let gpChart=null, gpTicker=null, gpPeriod='3m';
+let gpChart=null, gpTicker=null, gpPeriod='3m', gpMode='price', gpLastData=null;
+let gpCompareTickers=[], gpCompareData={};
 
 function loadGP(ticker){
   gpTicker=ticker;gpPeriod='3m';
+  gpCompareTickers=[];gpCompareData={};
   document.getElementById('gpLogo').innerHTML='W22 &#9654; GP: '+ticker;
   document.getElementById('gpChartStats').innerHTML='';
-  // reset period buttons
+  document.getElementById('gpCompareInput').value='';
   document.querySelectorAll('#page-gp .period-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('#page-gp .period-btn')[4].classList.add('active');
   renderGPChart(ticker,gpPeriod);
+}
+
+async function gpAddCompare(){
+  const inp=document.getElementById('gpCompareInput');
+  const t=inp.value.trim().toUpperCase();
+  inp.value='';
+  if(!t||t===gpTicker||gpCompareTickers.includes(t))return;
+  gpCompareTickers.push(t);
+  // fetch data for comparison ticker
+  try{
+    const res=await fetch(`${API}/candles/${encodeURIComponent(t)}?p=${gpPeriod}`);
+    const data=await res.json();
+    if(data.c&&data.s!=='no_data'){
+      gpCompareData[t]=data;
+      drawGPChart(gpLastData);
+    } else {
+      gpCompareTickers=gpCompareTickers.filter(x=>x!==t);
+    }
+  }catch(e){gpCompareTickers=gpCompareTickers.filter(x=>x!==t);}
+}
+
+function gpClearCompare(){
+  gpCompareTickers=[];gpCompareData={};
+  if(gpLastData)drawGPChart(gpLastData);
 }
 
 async function gpChangePeriod(period,btn){
@@ -2380,6 +2637,21 @@ async function gpChangePeriod(period,btn){
   document.querySelectorAll('#page-gp .period-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   if(gpTicker)await renderGPChart(gpTicker,period);
+  // refetch comparison tickers for new period
+  for(const t of gpCompareTickers){
+    try{
+      const res=await fetch(`${API}/candles/${encodeURIComponent(t)}?p=${period}`);
+      const data=await res.json();
+      if(data.c&&data.s!=='no_data')gpCompareData[t]=data;
+    }catch(e){}
+  }
+  if(gpCompareTickers.length&&gpLastData)drawGPChart(gpLastData);
+}
+function gpChangeMode(mode,btn){
+  gpMode=mode;
+  document.querySelectorAll('.gp-mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(gpLastData)drawGPChart(gpLastData);
 }
 
 async function renderGPChart(ticker,period){
@@ -2393,41 +2665,84 @@ async function renderGPChart(ticker,period){
       document.getElementById('gpChartStats').innerHTML='<div class="stat" style="grid-column:span 3"><div class="stat-label" style="color:var(--red)">No data</div></div>';
       return;
     }
-    const closes=data.c,highs=data.h,lows=data.l,volumes=data.v||[];
-    const axis=buildAxisConfig(data.t,period);
-    const isUp=closes[closes.length-1]>=closes[0];
-    const color=isUp?'#00c853':'#ff3d3d';
-    if(gpChart)gpChart.destroy();
-    const ctx=document.getElementById('gpPriceChart').getContext('2d');
-    const tickSet=new Set(axis.tickIndices);
-    gpChart=new Chart(ctx,{
-      type:'line',plugins:[daySepPlugin],
-      data:{labels:axis.labels,datasets:[{data:closes,borderColor:color,borderWidth:1.5,pointRadius:0,fill:true,
-        backgroundColor:c=>{const g=c.chart.ctx.createLinearGradient(0,0,0,c.chart.height);g.addColorStop(0,isUp?'rgba(0,200,83,.12)':'rgba(255,61,61,.12)');g.addColorStop(1,'rgba(0,0,0,0)');return g;},tension:.2}]},
-      options:{responsive:true,maintainAspectRatio:false,_dayBounds:axis.dayBounds,
-        plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,backgroundColor:'#1a1a1a',borderColor:'#333',borderWidth:1,titleColor:'#888',bodyColor:'#e0e0e0',
-          titleFont:{family:'IBM Plex Mono',size:10},bodyFont:{family:'IBM Plex Mono',size:12},
-          callbacks:{title:tipCtx=>{const d=new Date(data.t[tipCtx[0].dataIndex]*1000);return axis.tooltip(d);},
-            label:c=>` $${c.parsed.y.toFixed(2)}`}}},
-        scales:{x:{grid:{color:i=>tickSet.has(i)?'#1e1e1e':'transparent'},
-            ticks:{color:'#555',font:{family:'IBM Plex Mono',size:9},minRotation:45,maxRotation:45,autoSkip:false,
-              callback:function(val,i){return tickSet.has(i)?axis.labels[i]:null;}},border:{color:'#222'}},
-          y:{position:'right',grid:{color:'#161616'},ticks:{color:'#555',font:{family:'IBM Plex Mono',size:9}},border:{color:'#222'}}}}
-    });
-    const high=Math.max(...highs.filter(v=>v));
-    const low=Math.min(...lows.filter(v=>v));
-    const chg=(closes[closes.length-1]-closes[0])/closes[0]*100;
-    const rsi14=calcRSI(closes,14);
-    const rsi9=calcRSI(closes,9);
-    document.getElementById('gpChartStats').innerHTML=`
-      <div class="stat"><div class="stat-label">CURRENT</div><div class="stat-value">${fp(closes[closes.length-1])}</div></div>
-      <div class="stat"><div class="stat-label">PERIOD CHG</div><div class="stat-value ${chg>=0?'pos':'neg'}">${chg>=0?'+':''}${chg.toFixed(2)}%</div></div>
-      <div class="stat"><div class="stat-label">RSI 9 / 14</div><div class="stat-value">${rsi9!=null?rsi9.toFixed(1):'--'} / ${rsi14!=null?rsi14.toFixed(1):'--'}</div></div>
-      <div class="stat"><div class="stat-label">PERIOD HIGH</div><div class="stat-value pos">${fp(high)}</div></div>
-      <div class="stat"><div class="stat-label">PERIOD LOW</div><div class="stat-value neg">${fp(low)}</div></div>
-      <div class="stat"><div class="stat-label">AVG VOL</div><div class="stat-value neutral">${volumes.length?fVol(volumes.reduce((a,b)=>a+b,0)/volumes.length):'--'}</div></div>`;
-    document.getElementById('gpTagline').textContent=`${ticker} · ${isUp?'+':''}${chg.toFixed(2)}%`;
+    data._period=period;
+    gpLastData=data;
+    drawGPChart(data);
   }catch(e){loadingEl.style.display='none';}
+}
+
+function drawGPChart(data){
+  const period=data._period||gpPeriod;
+  const rawCloses=data.c,highs=data.h,lows=data.l,volumes=data.v||[];
+  const useNorm=gpMode==='norm';
+  const hasCompare=gpCompareTickers.length>0;
+  const base=rawCloses[0];
+  const closes=useNorm?rawCloses.map(v=>(v/base)*100):rawCloses;
+  const axis=buildAxisConfig(data.t,period);
+  const isUp=rawCloses[rawCloses.length-1]>=rawCloses[0];
+  const mainColor=hasCompare?'#4fc3f7':(isUp?'#00c853':'#ff3d3d');
+  if(gpChart)gpChart.destroy();
+  const ctx=document.getElementById('gpPriceChart').getContext('2d');
+  const tickSet=new Set(axis.tickIndices);
+
+  // build datasets
+  const datasets=[{
+    label:gpTicker,data:closes,borderColor:mainColor,borderWidth:1.5,pointRadius:0,tension:.2,
+    fill:!hasCompare,
+    backgroundColor:hasCompare?'transparent':c=>{
+      const g=c.chart.ctx.createLinearGradient(0,0,0,c.chart.height);
+      g.addColorStop(0,isUp?'rgba(0,200,83,.12)':'rgba(255,61,61,.12)');
+      g.addColorStop(1,'rgba(0,0,0,0)');return g;},
+  }];
+  const compColors=['#f0a500','#00c853','#ff3d3d','#bb86fc','#ff6e40','#26c6da','#ec407a'];
+  gpCompareTickers.forEach((t,i)=>{
+    const cd=gpCompareData[t];
+    if(!cd||!cd.c)return;
+    const rc=cd.c;
+    // align to same length as main (trim from start if longer)
+    let aligned=rc;
+    if(rc.length>rawCloses.length) aligned=rc.slice(rc.length-rawCloses.length);
+    else if(rc.length<rawCloses.length) aligned=[...Array(rawCloses.length-rc.length).fill(null),...rc];
+    const cBase=aligned.find(v=>v!=null);
+    const vals=useNorm?aligned.map(v=>v!=null?(v/cBase)*100:null):aligned;
+    datasets.push({
+      label:t,data:vals,borderColor:compColors[i%compColors.length],borderWidth:1.5,pointRadius:0,
+      tension:.2,fill:false,
+    });
+  });
+
+  gpChart=new Chart(ctx,{
+    type:'line',plugins:[daySepPlugin],
+    data:{labels:axis.labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,_dayBounds:axis.dayBounds,
+      plugins:{
+        legend:{display:hasCompare,position:'top',labels:{color:'#888',font:{family:'IBM Plex Mono',size:10},boxWidth:12,padding:12}},
+        tooltip:{mode:'index',intersect:false,backgroundColor:'#1a1a1a',borderColor:'#333',borderWidth:1,titleColor:'#888',bodyColor:'#e0e0e0',
+        titleFont:{family:'IBM Plex Mono',size:10},bodyFont:{family:'IBM Plex Mono',size:11},
+        callbacks:{title:tipCtx=>{const d=new Date(data.t[tipCtx[0].dataIndex]*1000);return axis.tooltip(d);},
+          label:c=>c.parsed.y!=null?(useNorm?` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}`:` ${c.dataset.label}: $${c.parsed.y.toFixed(2)}`):''}
+      }},
+      scales:{x:{grid:{color:i=>tickSet.has(i)?'#1e1e1e':'transparent'},
+          ticks:{color:'#555',font:{family:'IBM Plex Mono',size:9},minRotation:45,maxRotation:45,autoSkip:false,
+            callback:function(val,i){return tickSet.has(i)?axis.labels[i]:null;}},border:{color:'#222'}},
+        y:{position:'right',grid:{color:'#161616'},
+          ticks:{color:'#555',font:{family:'IBM Plex Mono',size:9},callback:v=>useNorm?v.toFixed(0):'$'+v.toFixed(0)},
+          border:{color:'#222'}}}}
+  });
+  const high=Math.max(...highs.filter(v=>v));
+  const low=Math.min(...lows.filter(v=>v));
+  const chg=(rawCloses[rawCloses.length-1]-rawCloses[0])/rawCloses[0]*100;
+  const rsi14=calcRSI(rawCloses,14);
+  const rsi9=calcRSI(rawCloses,9);
+  document.getElementById('gpChartStats').innerHTML=`
+    <div class="stat"><div class="stat-label">CURRENT</div><div class="stat-value">${fp(rawCloses[rawCloses.length-1])}</div></div>
+    <div class="stat"><div class="stat-label">PERIOD CHG</div><div class="stat-value ${chg>=0?'pos':'neg'}">${chg>=0?'+':''}${chg.toFixed(2)}%</div></div>
+    <div class="stat"><div class="stat-label">RSI 9 / 14</div><div class="stat-value">${rsi9!=null?rsi9.toFixed(1):'--'} / ${rsi14!=null?rsi14.toFixed(1):'--'}</div></div>
+    <div class="stat"><div class="stat-label">PERIOD HIGH</div><div class="stat-value pos">${fp(high)}</div></div>
+    <div class="stat"><div class="stat-label">PERIOD LOW</div><div class="stat-value neg">${fp(low)}</div></div>
+    <div class="stat"><div class="stat-label">AVG VOL</div><div class="stat-value neutral">${volumes.length?fVol(volumes.reduce((a,b)=>a+b,0)/volumes.length):'--'}</div></div>`;
+  const compareStr=gpCompareTickers.length?` vs ${gpCompareTickers.join(', ')}`:'';
+  document.getElementById('gpTagline').textContent=`${gpTicker}${compareStr} · ${isUp?'+':''}${chg.toFixed(2)}%`;
 }
 
 /* ========== DES (Company Description) ========== */

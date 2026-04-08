@@ -112,10 +112,11 @@ def candles(ticker):
             if hasattr(df.columns, 'droplevel'):
                 try: df = df.droplevel('Ticker', axis=1)
                 except (KeyError, ValueError): pass
+            df = df.dropna(subset=['Close'])
             return jsonify({
                 'c': df['Close'].tolist(), 'o': df['Open'].tolist(),
                 'h': df['High'].tolist(), 'l': df['Low'].tolist(),
-                'v': [int(x) for x in df['Volume'].tolist()],
+                'v': [int(x) if x == x else 0 for x in df['Volume'].tolist()],
                 't': [int(ts.timestamp()) for ts in df.index], 's': 'ok'
             })
         except Exception as e:
@@ -144,10 +145,11 @@ def candles(ticker):
         if hasattr(df.columns, 'droplevel'):
             try: df = df.droplevel('Ticker', axis=1)
             except (KeyError, ValueError): pass
+        df = df.dropna(subset=['Close'])
         return jsonify({
             'c': df['Close'].tolist(), 'o': df['Open'].tolist(),
             'h': df['High'].tolist(), 'l': df['Low'].tolist(),
-            'v': [int(x) for x in df['Volume'].tolist()],
+            'v': [int(x) if x == x else 0 for x in df['Volume'].tolist()],
             't': [int(ts.timestamp()) for ts in df.index], 's': 'ok'
         })
     except Exception as e:
@@ -828,6 +830,51 @@ def top():
     _top_cache['ts'] = _time.time()
     _top_cache['data'] = resp
     return jsonify(resp)
+
+@app.route('/api/hs')
+def hs():
+    tickers_str = request.args.get('tickers', '')
+    p = request.args.get('p', '1y')
+    tickers = [t.strip() for t in tickers_str.split(',') if t.strip()]
+    if not tickers:
+        return jsonify({'error': 'No tickers provided'})
+
+    period_map = {
+        '1m': '1mo', '3m': '3mo', '6m': '6mo',
+        '1y': '1y', '2y': '2y', '5y': '5y', 'max': 'max',
+    }
+    yf_period = period_map.get(p, '1y')
+    try:
+        df = yf.download(tickers, period=yf_period, interval='1d', progress=False)
+        if df.empty:
+            return jsonify({'error': 'No data'})
+        result = {'tickers': tickers, 'period': p, 'series': {}}
+        # get close prices for each ticker, align on common dates
+        closes = {}
+        for t in tickers:
+            try:
+                c = df['Close'][t].dropna() if len(tickers) > 1 else df['Close'].dropna()
+                if not c.empty:
+                    closes[t] = c
+            except:
+                pass
+        if not closes:
+            return jsonify({'error': 'No price data'})
+        # align to common dates
+        import pandas as pd
+        aligned = pd.DataFrame(closes).dropna()
+        if aligned.empty:
+            return jsonify({'error': 'No overlapping dates'})
+        timestamps = [int(ts.timestamp()) for ts in aligned.index]
+        for t in aligned.columns:
+            raw = aligned[t].tolist()
+            base = raw[0]
+            norm = [round((v / base) * 100, 2) for v in raw]
+            result['series'][t] = {'raw': [round(v, 4) for v in raw], 'norm': norm}
+        result['timestamps'] = timestamps
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)})
 
 @app.route('/api/cn/<ticker>')
 def cn(ticker):
