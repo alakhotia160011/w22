@@ -147,6 +147,15 @@
   .heat-cell:hover{border-color:var(--text);z-index:1;}
   .heat-ticker{font-size:10px;font-weight:600;color:#fff;text-shadow:0 0 2px rgba(0,0,0,.8);}
   .heat-pct{font-size:9px;font-weight:500;color:#fff;text-shadow:0 0 2px rgba(0,0,0,.8);}
+  .chat-msg{padding:10px 0;border-bottom:1px solid #161616;}
+  .chat-role{font-size:9px;letter-spacing:1px;font-weight:600;margin-bottom:4px;}
+  .chat-role-user{color:var(--blue);}
+  .chat-role-assistant{color:var(--accent);}
+  .chat-text{color:var(--text);font-size:12px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;}
+  .chat-text code{background:var(--bg3);padding:1px 4px;border-radius:2px;font-size:11px;}
+  .chat-text strong{color:var(--accent);}
+  .chat-cursor{display:inline-block;width:6px;height:12px;background:var(--accent);animation:blink 1s step-end infinite;}
+  @keyframes blink{50%{opacity:0;}}
   .news-item{padding:12px 0;border-bottom:1px solid var(--border);}
   .news-item:hover{background:var(--bg3);margin:0 -16px;padding:12px 16px;}
   .news-source{font-size:9px;letter-spacing:1px;font-weight:600;margin-right:8px;}
@@ -204,7 +213,7 @@
   .home-cmd:hover{border-color:var(--accent);}
   .home-cmd-key{color:var(--green);font-weight:600;font-size:13px;letter-spacing:2px;}
   .home-cmd-desc{color:var(--muted);font-size:11px;}
-  .home-footer{color:#1a1a1a;font-size:10px;margin-top:40px;letter-spacing:1px;}
+  .home-footer{color:var(--muted);font-size:10px;margin-top:40px;letter-spacing:1px;}
 </style>
 </head>
 <body>
@@ -213,7 +222,7 @@
 <div class="cmdbar">
   <span class="cmdbar-logo" onclick="navigateTo('home')">W22</span>
   <input class="cmd-input" id="cmdInput" placeholder="Enter command..." autofocus onkeydown="handleCmd(event)"/>
-  <span class="cmd-hint" id="cmdHint">W | WIRP | ECO | WEI | WEIF | FX | GLCO | HEAT | TOP | NEWS</span>
+  <span class="cmd-hint" id="cmdHint">W | WIRP | ECO | WEI | WEIF | FX | GLCO | HEAT | TOP | NEWS | CHAT</span>
   <span class="cmd-clock" id="cmdClock">--</span>
 </div>
 
@@ -258,6 +267,10 @@
       <div class="home-cmd" onclick="execCmd('HS')">
         <span class="home-cmd-key">HS &lt;T1&gt; &lt;T2&gt;</span>
         <span class="home-cmd-desc">Historical Spread (e.g. HS AAPL MSFT)</span>
+      </div>
+      <div class="home-cmd" onclick="execCmd('CHAT')">
+        <span class="home-cmd-key">CHAT &lt;GO&gt;</span>
+        <span class="home-cmd-desc">AI Chatbot (Claude)</span>
       </div>
       <div class="home-cmd" onclick="execCmd('TOP')">
         <span class="home-cmd-key">TOP &lt;GO&gt;</span>
@@ -700,6 +713,18 @@
   </div>
 </div>
 </div><!-- /page-hs -->
+
+<!-- CHAT PAGE -->
+<div class="page" id="page-chat">
+<div style="display:flex;flex-direction:column;height:calc(100vh - 38px);background:var(--bg);">
+  <div id="chatMessages" style="flex:1;overflow-y:auto;padding:16px 24px;"></div>
+  <div style="padding:12px 24px;border-top:1px solid var(--border);background:var(--bg2);display:flex;gap:8px;">
+    <input id="chatInput" class="search-box" style="flex:1;width:auto;font-size:12px;padding:8px 12px;" placeholder="Ask anything..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"/>
+    <button class="tb-btn" onclick="sendChat()" style="padding:8px 16px;">SEND</button>
+    <button class="tb-btn" onclick="clearChat()" style="padding:8px 12px;">CLEAR</button>
+  </div>
+</div>
+</div><!-- /page-chat -->
 
 <!-- TOP PAGE -->
 <div class="page" id="page-top">
@@ -1727,6 +1752,7 @@ const COMMANDS={
   'FX':{page:'fx',label:'FX Monitor'},
   'GLCO':{page:'glco',label:'Commodities'},
   'HEAT':{page:'heat',label:'Heatmap'},
+  'CHAT':{page:'chat',label:'AI Chat'},
   'TOP':{page:'top',label:'Top News'},
   'NEWS':{page:'news',label:'Newsletters'},
 };
@@ -1864,6 +1890,9 @@ function navigateTo(page){
   } else if(page==='glco'){
     document.getElementById('cmdHint').textContent='W22: Home | W | WEI | FX';
     if(!glcoInitialized){glcoInitialized=true;loadGLCO();}
+  } else if(page==='chat'){
+    document.getElementById('cmdHint').textContent='W22: Home | W | TOP';
+    setTimeout(()=>document.getElementById('chatInput').focus(),100);
   } else if(page==='top'){
     document.getElementById('cmdHint').textContent='W22: Home | W | NEWS | ECO';
     if(!topInitialized){topInitialized=true;loadTOP();}
@@ -2397,6 +2426,96 @@ function renderTOP(){
       ${a.desc?`<div class="news-desc">${a.desc}</div>`:''}`;
     el.appendChild(div);
   });
+}
+
+/* ========== CHAT ========== */
+let chatHistory=[];
+let chatStreaming=false;
+
+function clearChat(){
+  chatHistory=[];
+  document.getElementById('chatMessages').innerHTML='<div style="color:var(--muted);padding:40px;text-align:center;">Ask anything.</div>';
+}
+clearChat();
+
+async function sendChat(){
+  if(chatStreaming)return;
+  const inp=document.getElementById('chatInput');
+  const msg=inp.value.trim();
+  if(!msg)return;
+  inp.value='';
+
+  chatHistory.push({role:'user',content:msg});
+
+  const container=document.getElementById('chatMessages');
+  // clear placeholder
+  if(chatHistory.length===1)container.innerHTML='';
+
+  // render user message
+  const userDiv=document.createElement('div');
+  userDiv.className='chat-msg';
+  userDiv.innerHTML=`<div class="chat-role chat-role-user">YOU</div><div class="chat-text">${msg.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+  container.appendChild(userDiv);
+
+  // render assistant placeholder
+  const asstDiv=document.createElement('div');
+  asstDiv.className='chat-msg';
+  asstDiv.innerHTML=`<div class="chat-role chat-role-assistant">W22</div><div class="chat-text" id="chatStreamTarget"><span class="chat-cursor"></span></div>`;
+  container.appendChild(asstDiv);
+  container.scrollTop=container.scrollHeight;
+
+  chatStreaming=true;
+  const target=document.getElementById('chatStreamTarget');
+  let fullText='';
+
+  try{
+    const res=await fetch(`${API}/chat`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:chatHistory}),
+    });
+    const reader=res.body.getReader();
+    const decoder=new TextDecoder();
+    let buffer='';
+
+    while(true){
+      const{done,value}=await reader.read();
+      if(done)break;
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split('\n');
+      buffer=lines.pop();
+      for(const line of lines){
+        if(line.startsWith('data: ')){
+          const data=line.slice(6);
+          if(data==='[DONE]')break;
+          fullText+=data.replace(/\\n/g,'\n');
+          target.innerHTML=formatChat(fullText)+'<span class="chat-cursor"></span>';
+          container.scrollTop=container.scrollHeight;
+        }
+      }
+    }
+    target.innerHTML=formatChat(fullText);
+    chatHistory.push({role:'assistant',content:fullText});
+  }catch(e){
+    target.innerHTML=`<span style="color:var(--red)">Error: ${e.message}</span>`;
+  }
+  chatStreaming=false;
+  target.removeAttribute('id');
+  container.scrollTop=container.scrollHeight;
+  inp.focus();
+}
+
+function formatChat(text){
+  // basic markdown: bold, code, headers
+  let h=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  h=h.replace(/```([\s\S]*?)```/g,'<code style="display:block;background:var(--bg3);padding:8px;margin:4px 0;white-space:pre;">$1</code>');
+  h=h.replace(/`([^`]+)`/g,'<code>$1</code>');
+  h=h.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  h=h.replace(/^### (.+)$/gm,'<strong style="color:var(--accent);">$1</strong>');
+  h=h.replace(/^## (.+)$/gm,'<strong style="color:var(--accent);font-size:13px;">$1</strong>');
+  h=h.replace(/^# (.+)$/gm,'<strong style="color:var(--accent);font-size:14px;">$1</strong>');
+  h=h.replace(/^- (.+)$/gm,'<span style="color:var(--accent)">&#9654;</span> $1');
+  return h;
 }
 
 /* ========== HS (Historical Spread) ========== */
