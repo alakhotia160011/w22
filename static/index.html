@@ -1840,6 +1840,7 @@ const COMMANDS={
 
 function handleCmd(e){
   if(e.key!=='Enter')return;
+  hideAC();
   const raw=document.getElementById('cmdInput').value.trim().toUpperCase();
   document.getElementById('cmdInput').value='';
   if(!raw)return;
@@ -2083,15 +2084,60 @@ function navigateTo(page){
   document.getElementById('cmdInput').focus();
 }
 
-// command bar clock
+// command bar clock + NYSE bell
+let prevMarketOpen=null;
+
+// generate NYSE bell sound using Web Audio API
+function playNYSEBell(){
+  try{
+    const ac=new (window.AudioContext||window.webkitAudioContext)();
+    const duration=3;
+    const strikes=[0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4];
+    strikes.forEach(t=>{
+      const osc=ac.createOscillator();
+      const gain=ac.createGain();
+      osc.type='sine';
+      osc.frequency.setValueAtTime(1200,ac.currentTime+t);
+      osc.frequency.exponentialRampToValueAtTime(800,ac.currentTime+t+0.3);
+      gain.gain.setValueAtTime(0.3,ac.currentTime+t);
+      gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+t+0.38);
+      osc.connect(gain);
+      gain.connect(ac.destination);
+      osc.start(ac.currentTime+t);
+      osc.stop(ac.currentTime+t+0.4);
+      // add harmonic
+      const osc2=ac.createOscillator();
+      const gain2=ac.createGain();
+      osc2.type='sine';
+      osc2.frequency.setValueAtTime(2400,ac.currentTime+t);
+      osc2.frequency.exponentialRampToValueAtTime(1600,ac.currentTime+t+0.3);
+      gain2.gain.setValueAtTime(0.1,ac.currentTime+t);
+      gain2.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+t+0.35);
+      osc2.connect(gain2);
+      gain2.connect(ac.destination);
+      osc2.start(ac.currentTime+t);
+      osc2.stop(ac.currentTime+t+0.4);
+    });
+  }catch(e){}
+}
+
 function updateCmdClock(){
   const now=new Date();
   const et=new Date(now.toLocaleString('en-US',{timeZone:'America/New_York'}));
-  const h=et.getHours(),m=et.getMinutes();
-  const isOpen=et.getDay()>=1&&et.getDay()<=5&&((h===9&&m>=30)||h>=10)&&h<16;
-  const local=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  const h=et.getHours(),m=et.getMinutes(),s=et.getSeconds();
+  const isWeekday=et.getDay()>=1&&et.getDay()<=5;
+  const isOpen=isWeekday&&((h===9&&m>=30)||h>=10)&&h<16;
   const etStr=et.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
   document.getElementById('cmdClock').innerHTML=`${etStr} ET <span style="color:${isOpen?'var(--green)':'#333'}">${isOpen?'MKT OPEN':'MKT CLOSED'}</span>`;
+
+  // detect market open/close transitions
+  if(prevMarketOpen!==null&&prevMarketOpen!==isOpen&&isWeekday){
+    // opening bell: 9:30:00 ET
+    if(isOpen&&h===9&&m===30&&s<3) playNYSEBell();
+    // closing bell: 16:00:00 ET
+    if(!isOpen&&h===16&&m===0&&s<3) playNYSEBell();
+  }
+  prevMarketOpen=isOpen;
 }
 setInterval(updateCmdClock,1000);
 updateCmdClock();
@@ -2129,32 +2175,43 @@ document.addEventListener('click',e=>{
     document.getElementById('cmdInput').focus();
 });
 
-// init ticker autocomplete on key inputs
-// command bar: only show AC when input doesn't match a known command
+// command bar autocomplete - custom handler (not initTickerAC)
 const knownCmds=new Set(Object.keys(COMMANDS).concat(['HS','FA','GP','DES','EVT','CN','LOAD']));
 const cmdInputEl=document.getElementById('cmdInput');
-const origACHandler=cmdInputEl.oninput;
-initTickerAC(cmdInputEl,(sym)=>{
-  cmdInputEl.value='';
-  hideAC();
-  execCmd(sym);
-});
-// override the AC input handler to skip known commands
 cmdInputEl.addEventListener('input',function(){
   const val=this.value.trim().toUpperCase();
-  const firstWord=val.split(/\s+/)[0];
-  // if it's a known command or starts with one, don't show AC
-  if(knownCmds.has(firstWord)||val.length<2){hideAC();return;}
-  // if it has a space (like "FA " prefix), search the part after
   const parts=val.split(/\s+/);
-  if(parts.length>1&&['FA','GP','DES','EVT','CN','LOAD'].includes(parts[0])){
-    // search for the second part
+  const firstWord=parts[0];
+  // known command with no argument - hide AC
+  if(knownCmds.has(firstWord)&&parts.length===1){hideAC();return;}
+  // too short
+  if(val.length<2){hideAC();return;}
+  // command + partial ticker (e.g. "FA app") - search the second part
+  if(parts.length>1&&['FA','GP','DES','EVT','CN','LOAD'].includes(firstWord)){
+    const query=parts.slice(1).join(' ');
+    if(query.length<2){hideAC();return;}
     clearTimeout(acTimer);
     acInput=this;
-    acCallback=(sym)=>{this.value=parts[0]+' '+sym;hideAC();};
-    acTimer=setTimeout(()=>fetchAC(parts[parts.length-1]),200);
+    acCallback=(sym)=>{this.value=firstWord+' '+sym;hideAC();};
+    acTimer=setTimeout(()=>fetchAC(query),200);
+    return;
   }
-},{capture:true});
+  // not a known command - search as ticker/company name
+  if(!knownCmds.has(firstWord)){
+    clearTimeout(acTimer);
+    acInput=this;
+    acCallback=(sym)=>{this.value='';hideAC();execCmd(sym);};
+    acTimer=setTimeout(()=>fetchAC(val),200);
+  }
+});
+cmdInputEl.addEventListener('keydown',e=>{
+  const dd=document.getElementById('tickerAC');
+  if(dd.style.display==='none')return;
+  if(e.key==='ArrowDown'){e.preventDefault();acIdx=Math.min(acIdx+1,acResults.length-1);renderAC();}
+  else if(e.key==='ArrowUp'){e.preventDefault();acIdx=Math.max(acIdx-1,0);renderAC();}
+  else if(e.key==='Enter'&&acIdx>=0&&acResults[acIdx]){e.preventDefault();selectAC(acIdx);}
+  else if(e.key==='Escape'){hideAC();}
+});
 // HS inputs
 initTickerAC(document.getElementById('hsTicker1'),(sym)=>{document.getElementById('hsTicker1').value=sym;});
 initTickerAC(document.getElementById('hsTicker2'),(sym)=>{document.getElementById('hsTicker2').value=sym;});
