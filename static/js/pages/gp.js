@@ -1,15 +1,20 @@
 /* ========== GP (full-page chart) ========== */
 let gpChart=null, gpTicker=null, gpPeriod='3m', gpMode='price', gpLastData=null;
 let gpCompareTickers=[], gpCompareData={};
+let gpPrevClose=null; // previous day's close for daily change calc
 
 function loadGP(ticker){
   gpTicker=ticker;gpPeriod='3m';
-  gpCompareTickers=[];gpCompareData={};
+  gpCompareTickers=[];gpCompareData={};gpPrevClose=null;
   document.getElementById('gpLogo').innerHTML='W22 &#9654; GP: '+ticker;
   document.getElementById('gpChartStats').innerHTML='';
   document.getElementById('gpCompareInput').value='';
   document.querySelectorAll('#page-gp .period-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('#page-gp .period-btn')[4].classList.add('active');
+  // fetch prev close
+  fetch(`${API}/quote/${encodeURIComponent(ticker)}`).then(r=>r.json()).then(q=>{
+    if(q.pc)gpPrevClose=q.pc;
+  }).catch(()=>{});
   renderGPChart(ticker,gpPeriod);
 }
 
@@ -19,7 +24,6 @@ async function gpAddCompare(){
   inp.value='';
   if(!t||t===gpTicker||gpCompareTickers.includes(t))return;
   gpCompareTickers.push(t);
-  // fetch data for comparison ticker
   try{
     const res=await fetch(`${API}/candles/${encodeURIComponent(t)}?p=${gpPeriod}`);
     const data=await res.json();
@@ -42,7 +46,6 @@ async function gpChangePeriod(period,btn){
   document.querySelectorAll('#page-gp .period-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   if(gpTicker)await renderGPChart(gpTicker,period);
-  // refetch comparison tickers for new period
   for(const t of gpCompareTickers){
     try{
       const res=await fetch(`${API}/candles/${encodeURIComponent(t)}?p=${period}`);
@@ -81,16 +84,23 @@ function drawGPChart(data){
   const rawCloses=data.c,highs=data.h,lows=data.l,volumes=data.v||[];
   const useNorm=gpMode==='norm';
   const hasCompare=gpCompareTickers.length>0;
+  const current=rawCloses[rawCloses.length-1];
   const base=rawCloses[0];
+
+  // daily change from prev close (the standard way)
+  const dailyChg=gpPrevClose?((current-gpPrevClose)/gpPrevClose)*100:null;
+  // period change from first bar
+  const periodChg=((current-base)/base)*100;
+  // use prev close for color if available, otherwise period
+  const isUp=gpPrevClose?(current>=gpPrevClose):(current>=base);
+
   const closes=useNorm?rawCloses.map(v=>(v/base)*100):rawCloses;
   const axis=buildAxisConfig(data.t,period);
-  const isUp=rawCloses[rawCloses.length-1]>=rawCloses[0];
   const mainColor=hasCompare?'#4fc3f7':(isUp?'#00c853':'#ff3d3d');
   if(gpChart)gpChart.destroy();
   const ctx=document.getElementById('gpPriceChart').getContext('2d');
   const tickSet=new Set(axis.tickIndices);
 
-  // build datasets
   const datasets=[{
     label:gpTicker,data:closes,borderColor:mainColor,borderWidth:1.5,pointRadius:0,tension:.2,
     fill:!hasCompare,
@@ -104,7 +114,6 @@ function drawGPChart(data){
     const cd=gpCompareData[t];
     if(!cd||!cd.c)return;
     const rc=cd.c;
-    // align to same length as main (trim from start if longer)
     let aligned=rc;
     if(rc.length>rawCloses.length) aligned=rc.slice(rc.length-rawCloses.length);
     else if(rc.length<rawCloses.length) aligned=[...Array(rawCloses.length-rc.length).fill(null),...rc];
@@ -136,17 +145,24 @@ function drawGPChart(data){
   });
   const high=Math.max(...highs.filter(v=>v));
   const low=Math.min(...lows.filter(v=>v));
-  const chg=(rawCloses[rawCloses.length-1]-rawCloses[0])/rawCloses[0]*100;
   const rsi14=calcRSI(rawCloses,14);
   const rsi9=calcRSI(rawCloses,9);
+  // daily change (prev close based) + period change
+  const dailyStr=dailyChg!=null?`${dailyChg>=0?'+':''}${dailyChg.toFixed(2)}%`:'--';
+  const dailyCls=dailyChg!=null?(dailyChg>=0?'pos':'neg'):'neutral';
+  const periodStr=`${periodChg>=0?'+':''}${periodChg.toFixed(2)}%`;
+  const periodCls=periodChg>=0?'pos':'neg';
+  const periodLabel={'1d':'1D','3d':'3D','1w':'1W','1m':'1M','3m':'3M','6m':'6M','1y':'1Y','5y':'5Y','max':'MAX'}[period]||period;
   document.getElementById('gpChartStats').innerHTML=`
-    <div class="stat"><div class="stat-label">CURRENT</div><div class="stat-value">${fp(rawCloses[rawCloses.length-1])}</div></div>
-    <div class="stat"><div class="stat-label">PERIOD CHG</div><div class="stat-value ${chg>=0?'pos':'neg'}">${chg>=0?'+':''}${chg.toFixed(2)}%</div></div>
+    <div class="stat"><div class="stat-label">CURRENT</div><div class="stat-value">${fp(current)}</div></div>
+    <div class="stat"><div class="stat-label">PREV CLOSE</div><div class="stat-value neutral">${gpPrevClose?fp(gpPrevClose):'--'}</div></div>
+    <div class="stat"><div class="stat-label">DAILY CHG</div><div class="stat-value ${dailyCls}">${dailyStr}</div></div>
+    <div class="stat"><div class="stat-label">${periodLabel} CHG</div><div class="stat-value ${periodCls}">${periodStr}</div></div>
     <div class="stat"><div class="stat-label">RSI 9 / 14</div><div class="stat-value">${rsi9!=null?rsi9.toFixed(1):'--'} / ${rsi14!=null?rsi14.toFixed(1):'--'}</div></div>
-    <div class="stat"><div class="stat-label">PERIOD HIGH</div><div class="stat-value pos">${fp(high)}</div></div>
-    <div class="stat"><div class="stat-label">PERIOD LOW</div><div class="stat-value neg">${fp(low)}</div></div>
+    <div class="stat"><div class="stat-label">${periodLabel} HIGH</div><div class="stat-value pos">${fp(high)}</div></div>
+    <div class="stat"><div class="stat-label">${periodLabel} LOW</div><div class="stat-value neg">${fp(low)}</div></div>
     <div class="stat"><div class="stat-label">AVG VOL</div><div class="stat-value neutral">${volumes.length?fVol(volumes.reduce((a,b)=>a+b,0)/volumes.length):'--'}</div></div>`;
   const compareStr=gpCompareTickers.length?` vs ${gpCompareTickers.join(', ')}`:'';
-  const periodLabel={'1d':'1D','3d':'3D','1w':'1W','1m':'1M','3m':'3M','6m':'6M','1y':'1Y','5y':'5Y','max':'MAX'}[gpPeriod]||gpPeriod;
-  document.getElementById('gpTagline').textContent=`${gpTicker}${compareStr} · ${periodLabel}: ${isUp?'+':''}${chg.toFixed(2)}%`;
+  const tagChg=dailyChg!=null?dailyChg:periodChg;
+  document.getElementById('gpTagline').textContent=`${gpTicker}${compareStr} · ${tagChg>=0?'+':''}${tagChg.toFixed(2)}%`;
 }
