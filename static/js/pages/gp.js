@@ -147,5 +147,6 @@ function drawGPChart(data){
     <div class="stat"><div class="stat-label">PERIOD LOW</div><div class="stat-value neg">${fp(low)}</div></div>
     <div class="stat"><div class="stat-label">AVG VOL</div><div class="stat-value neutral">${volumes.length?fVol(volumes.reduce((a,b)=>a+b,0)/volumes.length):'--'}</div></div>`;
   const compareStr=gpCompareTickers.length?` vs ${gpCompareTickers.join(', ')}`:'';
-  document.getElementById('gpTagline').textContent=`${gpTicker}${compareStr} · ${isUp?'+':''}${chg.toFixed(2)}%`;
+  const periodLabel={'1d':'1D','3d':'3D','1w':'1W','1m':'1M','3m':'3M','6m':'6M','1y':'1Y','5y':'5Y','max':'MAX'}[gpPeriod]||gpPeriod;
+  document.getElementById('gpTagline').textContent=`${gpTicker}${compareStr} · ${periodLabel}: ${isUp?'+':''}${chg.toFixed(2)}%`;
 }
