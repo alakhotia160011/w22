@@ -56,21 +56,27 @@ def chat():
     system = f"""You are a general-purpose AI chatbot. Answer any question the user asks - markets, finance, science, history, coding, life advice, whatever. Be helpful, clear, and concise.{market_context}"""
 
     def generate():
-        # send heartbeat immediately so connection stays alive
-        yield "data: \n\n"
+        yield "data: ...\n\n"
+        got_text = False
         try:
-            with client.messages.stream(
+            response = client.messages.create(
                 model='claude-sonnet-4-20250514',
                 max_tokens=1024,
                 system=system,
                 messages=messages,
-            ) as stream:
-                for text in stream.text_stream:
+                stream=True,
+            )
+            for event in response:
+                if event.type == 'content_block_delta' and hasattr(event.delta, 'text'):
+                    text = event.delta.text
                     escaped = text.replace('\n', '\\n')
                     yield f"data: {escaped}\n\n"
+                    got_text = True
+            if not got_text:
+                yield "data: [No content in response]\n\n"
             yield "data: [DONE]\n\n"
         except Exception as e:
-            yield f"data: Error: {str(e)}\n\n"
+            yield f"data: Error: {type(e).__name__}: {str(e)}\n\n"
             yield "data: [DONE]\n\n"
 
     return Response(stream_with_context(generate()), mimetype='text/event-stream',

@@ -64,7 +64,7 @@ async function sendChat(){
         buffer=buffer.substring(nlIdx+1);
         if(line.startsWith('data: ')){
           const data=line.slice(6);
-          if(data==='[DONE]')continue;
+          if(data==='[DONE]'||data==='...'||data==='')continue;
           fullText+=data.replace(/\\n/g,'\n');
           target.innerHTML=formatChat(fullText)+'<span class="chat-cursor"></span>';
           container.scrollTop=container.scrollHeight;
