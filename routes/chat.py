@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, Response, stream_with_context
 import os
+import re
 import time
 
 chat_bp = Blueprint('chat', __name__)
@@ -27,11 +28,52 @@ def _get_market_context():
                         lines.append(f"{name}: {last:.2f} ({'+' if chg>=0 else ''}{chg}%)")
                 except: pass
             if lines:
-                ctx = "\n\nLIVE MARKET DATA:\n" + "\n".join(lines)
+                ctx = "\nLIVE MARKET DATA:\n" + "\n".join(lines)
     except: pass
     _market_ctx_cache['ts'] = time.time()
     _market_ctx_cache['text'] = ctx
     return ctx
+
+
+def _lookup_tickers(text):
+    """Extract potential tickers from user message and fetch live data."""
+    import yfinance as yf
+    # find uppercase words that look like tickers (1-5 chars, sometimes with dots)
+    candidates = re.findall(r'\b([A-Z]{1,5}(?:\.[A-Z]{1,2})?)\b', text)
+    # also find common patterns like "USO ETF" or "$AAPL"
+    dollar_tickers = re.findall(r'\$([A-Za-z]{1,5})', text)
+    candidates.extend([t.upper() for t in dollar_tickers])
+    # filter out common English words
+    stopwords = {'I','A','THE','IS','IT','TO','IN','OF','AND','OR','ON','AT','DO','IF','MY','SO','UP',
+                 'AN','AS','BE','BY','HE','ME','NO','WE','AM','GO','HI','OK','US','ETF','CEO','IPO',
+                 'GDP','CPI','NFP','IMF','FED','SEC','PE','EPS','ROE','ROA','YTD','ATH','HOW','WHY',
+                 'CAN','ARE','FOR','NOT','BUT','ALL','HAS','HAD','WAS','DID','GET','GOT','HAS','ITS',
+                 'MAY','NEW','OLD','OUR','OUT','OWN','SAY','SHE','TOO','USE','WAY','WHO','BOY','HER',
+                 'HIM','HIS','LET','PUT','RUN','TOP','TRY','TWO','WAR','WON','YET','YOU','WHERE','WHAT',
+                 'WHEN','THIS','THAT','WITH','FROM','HAVE','WILL','BEEN','THAN','THEM','THEN','SOME'}
+    candidates = list(set(c for c in candidates if c not in stopwords and len(c) >= 2))
+    if not candidates:
+        return ""
+    # fetch data for up to 10 candidates
+    candidates = candidates[:10]
+    try:
+        df = yf.download(candidates, period='5d', interval='1d', progress=False)
+        if df.empty:
+            return ""
+        lines = []
+        for t in candidates:
+            try:
+                c = df['Close'][t].dropna() if len(candidates) > 1 else df['Close'].dropna()
+                if not c.empty and len(c) >= 2:
+                    last = float(c.iloc[-1])
+                    prev = float(c.iloc[-2])
+                    chg = round(((last - prev) / prev) * 100, 2)
+                    lines.append(f"{t}: ${last:.2f} ({'+' if chg>=0 else ''}{chg}%)")
+            except: pass
+        if lines:
+            return "\n\nTICKER DATA (requested by user):\n" + "\n".join(lines)
+    except: pass
+    return ""
 
 
 @chat_bp.route('/api/chat', methods=['POST'])
@@ -50,7 +92,14 @@ def chat():
     client = anthropic.Anthropic(api_key=api_key)
     market_context = _get_market_context()
 
-    system = f"""You are a general-purpose AI chatbot. Answer any question the user asks - markets, finance, science, history, coding, life advice, whatever. Be helpful, clear, and concise.{market_context}"""
+    # look up any tickers mentioned in the latest user message
+    latest_msg = messages[-1].get('content', '') if messages else ''
+    ticker_context = _lookup_tickers(latest_msg)
+
+    system = f"""You are a general-purpose AI chatbot embedded in a Bloomberg-style terminal called W22. Answer any question the user asks. Be helpful, clear, and concise. You have access to live market data below - use it to give specific, data-driven answers.
+{market_context}{ticker_context}
+
+When asked about a specific stock, ETF, or asset, use the ticker data provided. Give actual prices and changes, not disclaimers about not having data."""
 
     # non-streaming mode (for Railway / environments that buffer SSE)
     if mode == 'sync':
