@@ -76,4 +76,5 @@ def chat():
             yield f"data: Error: {str(e)}\n\n"
             yield "data: [DONE]\n\n"
 
-    return Response(stream_with_context(generate()), mimetype='text/event-stream')
+    return Response(stream_with_context(generate()), mimetype='text/event-stream',
+                    headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no', 'Connection': 'keep-alive'})
