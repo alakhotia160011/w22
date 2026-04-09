@@ -26,6 +26,7 @@ from routes.pred import pred_bp
 from routes.chat import chat_bp
 from routes.heat import heat_bp
 from routes.screener import screener_bp
+from routes.memb import memb_bp
 
 app.register_blueprint(quotes_bp)
 app.register_blueprint(markets_bp)
@@ -37,6 +38,7 @@ app.register_blueprint(pred_bp)
 app.register_blueprint(chat_bp)
 app.register_blueprint(heat_bp)
 app.register_blueprint(screener_bp)
+app.register_blueprint(memb_bp)
 
 
 @app.route('/')

@@ -69,12 +69,12 @@ function execCmd(cmd){
     return;
   }
 
-  const securityCmds=['GP','DES','FA','EVT','CN','COMP','CACS'];
+  const securityCmds=['GP','DES','FA','EVT','CN','COMP','CACS','MEMB'];
 
   // "LOAD AAPL" or "AAPL" followed by sub-command
   if(parts[0]==='LOAD'&&parts[1]){
     loadedTicker=parts[1];
-    document.getElementById('cmdHint').textContent=`${loadedTicker} loaded | GP DES FA EVT CN COMP CACS`;
+    document.getElementById('cmdHint').textContent=`${loadedTicker} loaded | GP DES FA EVT CN COMP CACS MEMB`;
     // default to GP (chart)
     execSecurityCmd(loadedTicker,'GP');
     return;
@@ -160,6 +160,9 @@ function execSecurityCmd(ticker,cmd){
   } else if(cmd==='CACS'){
     navigateTo('cacs');
     loadCACS(ticker);
+  } else if(cmd==='MEMB'){
+    navigateTo('memb');
+    loadMEMB(ticker);
   }
 }
 
@@ -236,14 +239,16 @@ function navigateTo(page){
   } else if(page==='comp'){
     document.getElementById('cmdHint').textContent='W22: Home | W | GP DES FA EVT CN CACS';
   } else if(page==='cacs'){
-    document.getElementById('cmdHint').textContent='W22: Home | W | GP DES FA EVT CN COMP';
+    document.getElementById('cmdHint').textContent='W22: Home | W | GP DES FA EVT CN COMP MEMB';
+  } else if(page==='memb'){
+    document.getElementById('cmdHint').textContent='W22: Home | W | GP DES FA EVT CN COMP CACS';
   }
   // refocus command input
   document.getElementById('cmdInput').focus();
 }
 
 // command bar autocomplete - custom handler (not initTickerAC)
-const knownCmds=new Set(Object.keys(COMMANDS).concat(['HS','FA','GP','DES','EVT','CN','COMP','CACS','LOAD']));
+const knownCmds=new Set(Object.keys(COMMANDS).concat(['HS','FA','GP','DES','EVT','CN','COMP','CACS','MEMB','LOAD']));
 const cmdInputEl=document.getElementById('cmdInput');
 cmdInputEl.addEventListener('input',function(){
   if(acSuppressed){hideAC();return;}
@@ -255,7 +260,7 @@ cmdInputEl.addEventListener('input',function(){
   // too short
   if(val.length<2){hideAC();return;}
   // command + partial ticker (e.g. "FA app") - search the second part
-  if(parts.length>1&&['FA','GP','DES','EVT','CN','COMP','CACS','LOAD'].includes(firstWord)){
+  if(parts.length>1&&['FA','GP','DES','EVT','CN','COMP','CACS','MEMB','LOAD'].includes(firstWord)){
     const query=parts.slice(1).join(' ');
     if(query.length<2){hideAC();return;}
     clearTimeout(acTimer);
