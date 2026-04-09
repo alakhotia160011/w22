@@ -48,7 +48,7 @@ def chat():
 
     mode = request.args.get('mode', 'stream')
     client = anthropic.Anthropic(api_key=api_key)
-    market_context = _market_ctx_cache.get('text', '')
+    market_context = _get_market_context()
 
     system = f"""You are a general-purpose AI chatbot. Answer any question the user asks - markets, finance, science, history, coding, life advice, whatever. Be helpful, clear, and concise.{market_context}"""
 
