@@ -1,0 +1,46 @@
+/* command bar */
+.cmdbar{display:flex;align-items:center;gap:12px;padding:6px 16px;background:#060606;border-bottom:2px solid var(--accent);position:sticky;top:0;z-index:200;}
+.cmdbar-logo{color:var(--accent);font-size:14px;font-weight:600;letter-spacing:3px;cursor:pointer;}
+.cmd-input{flex:1;background:transparent;border:none;color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;outline:none;letter-spacing:1px;caret-color:var(--green);}
+.cmd-input::placeholder{color:#2a2a2a;font-weight:400;}
+.cmd-hint{color:var(--muted);font-size:10px;white-space:nowrap;}
+.cmd-clock{color:var(--muted);font-size:11px;font-weight:500;white-space:nowrap;}
+
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);}
+.logo{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:2px;}
+.tagline{color:var(--muted);font-size:10px;}
+.tb-btn{background:var(--bg3);border:1px solid var(--border);color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 12px;cursor:pointer;}
+.tb-btn:hover{background:var(--accent);color:#000;}
+.search-box{background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 10px;width:160px;outline:none;}
+.search-box::placeholder{color:var(--muted);}
+
+/* status & summary */
+.status{padding:5px 16px;background:#0f0f0f;border-bottom:1px solid var(--border);font-size:10px;color:var(--muted);display:flex;justify-content:space-between;}
+.market-clock{font-weight:500;}
+.summary-bar{display:flex;gap:0;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;}
+.summary-item{padding:8px 16px;border-right:1px solid var(--border);min-width:120px;}
+.summary-label{color:var(--muted);font-size:9px;letter-spacing:1px;margin-bottom:2px;}
+.summary-value{font-size:12px;font-weight:500;}
+
+/* home screen */
+.home{display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 38px);background:var(--bg);gap:12px;}
+.home-logo{color:var(--accent);font-size:28px;font-weight:600;letter-spacing:6px;}
+.home-sub{color:var(--muted);font-size:11px;letter-spacing:2px;}
+.home-cmds{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:12px;min-width:600px;}
+.home-cmd{display:flex;justify-content:space-between;padding:6px 12px;background:var(--bg2);border:1px solid var(--border);cursor:pointer;transition:border-color .15s;align-items:center;}
+.home-cmd:hover{border-color:var(--accent);}
+.home-cmd-key{color:var(--green);font-weight:600;font-size:11px;letter-spacing:2px;min-width:90px;}
+.home-cmd-desc{color:var(--muted);font-size:10px;}
+.home-footer{color:var(--muted);font-size:10px;margin-top:40px;letter-spacing:1px;}
+
+/* page */
+.page{display:none;}
+.page.active{display:contents;}
+
+/* search dropdown for ticker add */
+.ticker-suggest{position:absolute;background:var(--bg2);border:1px solid var(--border);z-index:200;min-width:260px;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.5);}
+.ticker-suggest-item{padding:6px 10px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;}
+.ticker-suggest-item:hover,.ticker-suggest-item.active{background:var(--bg3);color:var(--accent);}
+.ticker-suggest-item .sym{color:var(--blue);font-weight:500;min-width:60px;}
+.ticker-suggest-item .desc{color:var(--muted);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}

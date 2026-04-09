@@ -1,0 +1,55 @@
+/* layout */
+.main{display:flex;height:calc(100vh - 38px - 41px - 28px - 44px);}
+.table-panel{flex:1;overflow-y:auto;overflow-x:auto;}
+
+/* table */
+table{width:100%;border-collapse:collapse;min-width:1300px;}
+thead{position:sticky;top:0;z-index:10;background:var(--bg2);}
+th{padding:8px 10px;text-align:right;color:var(--header);font-size:10px;font-weight:500;letter-spacing:1px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+th:first-child,th:nth-child(2),th:nth-child(3){text-align:left;}
+th:hover{color:var(--accent);}
+th.sort-asc::after{content:' ▲';color:var(--accent);}
+th.sort-desc::after{content:' ▼';color:var(--accent);}
+
+/* group header */
+.group-header td{padding:5px 10px;color:var(--accent);font-size:10px;letter-spacing:2px;background:#111;border-top:1px solid var(--border);font-weight:600;}
+.group-header .grp-actions{float:right;display:flex;gap:6px;}
+.group-header .grp-actions button{background:none;border:none;color:var(--muted);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;}
+.group-header .grp-actions button:hover{color:var(--accent);}
+.grp-name-edit{background:transparent;border:none;border-bottom:1px solid var(--accent);color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;font-weight:600;outline:none;width:200px;}
+
+/* data rows */
+tr.data-row{border-bottom:1px solid #161616;transition:background .1s;}
+tr.data-row:hover{background:var(--bg3);}
+tr.data-row.selected{background:#1a1600;border-left:2px solid var(--accent);}
+td{padding:5px 10px;text-align:right;white-space:nowrap;font-size:11px;}
+td:first-child{text-align:left;}
+td:nth-child(2){text-align:left;}
+td:nth-child(3){text-align:left;}
+.pos{color:var(--green);}.neg{color:var(--red);}.neutral{color:var(--muted);}
+.price-cell{font-weight:500;font-size:12px;}
+.ticker-cell{color:var(--blue);font-weight:500;cursor:pointer;}
+.ticker-cell:hover{text-decoration:underline;}
+.name-cell{color:var(--muted);}
+.rsi-wrap{display:inline-flex;align-items:center;gap:4px;}
+.rsi-bar{display:inline-block;width:30px;height:3px;background:#222;border-radius:2px;position:relative;overflow:hidden;}
+.rsi-fill{position:absolute;left:0;top:0;height:100%;border-radius:2px;}
+.vol-cell{color:var(--muted);font-size:10px;}
+
+/* editable buy cell */
+.buy-cell{cursor:text;color:var(--text);position:relative;text-align:right;}
+.buy-cell:hover{background:rgba(240,165,0,.06);}
+.buy-cell.editing{padding:0;}
+.buy-input{width:100%;background:var(--bg);border:1px solid var(--accent);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 10px;text-align:right;outline:none;box-shadow:0 0 0 1px var(--accent);}
+
+/* row controls */
+.row-ctrl{width:28px;text-align:center!important;padding:0 2px!important;}
+.del-btn{background:none;border:none;color:transparent;cursor:pointer;font-size:11px;font-family:'IBM Plex Mono',monospace;padding:2px 4px;}
+tr.data-row:hover .del-btn{color:var(--muted);}
+.del-btn:hover{color:var(--red)!important;}
+
+/* add-row */
+.add-row td{padding:4px 10px;border-top:1px dashed #1a1a1a;}
+.add-ticker-input{background:transparent;border:none;border-bottom:1px dashed var(--muted);color:var(--blue);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;outline:none;width:80px;padding:2px 0;}
+.add-ticker-input::placeholder{color:#333;}
+.add-ticker-input:focus{border-bottom-color:var(--accent);}

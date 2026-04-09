@@ -6,9 +6,35 @@ W22 is a Bloomberg Terminal-style web application for tracking financial markets
 
 ## Architecture
 
-- **Backend**: `app.py` - Flask server with ~30 API endpoints. Uses yfinance for market data, Gmail IMAP for newsletters, Polymarket APIs for prediction markets, Anthropic API for chat, RSS feeds for news, and Finviz for economic calendar.
-- **Frontend**: `static/index.html` - single monolithic HTML file (~4500 lines) containing all CSS, HTML pages, and JavaScript. Pages are toggled via `display:none` using a `page` class system.
+- **Backend**: Flask with Blueprints, split into route files under `routes/`. Shared helpers in `helpers.py`. Entry point is `app.py` (~40 lines).
+- **Frontend**: `static/index.html` - HTML + inline JS. CSS extracted to `static/css/` (5 files). Pages toggled via `display:none` using a `page` class system.
 - **No build step, no frameworks, no npm**. Just Python + vanilla JS + Chart.js.
+
+### Backend Structure
+```
+app.py              → Flask init, blueprint registration (~40 lines)
+helpers.py          → calc_rsi, build_market_item, flatten_df, timed_cache
+routes/
+  quotes.py         → /api/quotes, /api/quote, /api/candles, /api/search
+  market_screens.py → /api/wei, /api/weif, /api/fx, /api/glco
+  fixed_income.py   → /api/wirp, /api/fit
+  security.py       → /api/des, /api/evt, /api/fa, /api/cn, /api/hs
+  news.py           → /api/news (IMAP), /api/top (RSS)
+  eco.py            → /api/eco
+  pred.py           → /api/pred, /api/pred/events, /api/pred/history
+  chat.py           → /api/chat
+  heat.py           → /api/heat
+```
+
+### CSS Structure
+```
+static/css/
+  main.css          → variables, reset, animations
+  tables.css        → table, rows, groups, data cells
+  charts.css        → chart panels, period buttons, stats
+  components.css    → command bar, topbar, buttons, home page
+  pages.css         → page-specific (FA cards, heatmap, predictions, newsletters, chat)
+```
 
 ## Command System
 

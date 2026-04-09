@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap');
+
+:root{--bg:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--border:#222;--text:#e0e0e0;--muted:#555;--accent:#f0a500;--green:#00c853;--red:#ff3d3d;--blue:#4fc3f7;--header:#888;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;}
+
+/* scrollbars */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);}
+
+/* animations */
+.spinner{display:inline-block;width:10px;height:10px;border:1px solid var(--muted);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes flashG{0%{background:rgba(0,200,83,.15)}100%{background:transparent}}
+@keyframes flashR{0%{background:rgba(255,61,61,.15)}100%{background:transparent}}
+.fg{animation:flashG .6s ease;}.fr{animation:flashR .6s ease;}
+@keyframes flashUpdate{0%{background:rgba(240,165,0,.08)}100%{background:transparent}}
+.fu{animation:flashUpdate .8s ease;}

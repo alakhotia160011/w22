@@ -1,0 +1,101 @@
+/* WIRP table */
+#wirpTableBody td:first-child{text-align:left;color:var(--text);font-weight:500;}
+
+/* active button rules */
+.wirp-cb-btn.active,.eco-week-btn.active,.eco-imp-btn.active,.top-src-btn.active,.heat-idx-btn.active,.heat-per-btn.active,.fa-tab-btn.active,.hs-mode-btn.active,.hs-top-btn.active,.gp-mode-btn.active,.pred-cat-btn.active{background:var(--accent)!important;color:#000!important;}
+
+/* fundamentals */
+.fa-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+.fa-card{background:var(--bg2);border:1px solid var(--border);padding:10px 14px;}
+.fa-card-title{color:var(--accent);font-size:9px;letter-spacing:1px;font-weight:600;margin-bottom:8px;}
+.fa-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #161616;}
+.fa-row:last-child{border-bottom:none;}
+.fa-label{color:var(--muted);font-size:11px;}
+.fa-val{color:var(--text);font-size:11px;font-weight:500;}
+.fa-stmt-table{width:100%;border-collapse:collapse;}
+.fa-stmt-table th{text-align:right;color:var(--header);font-size:10px;padding:6px 10px;border-bottom:1px solid var(--border);}
+.fa-stmt-table th:first-child{text-align:left;}
+.fa-stmt-table td{text-align:right;padding:5px 10px;font-size:11px;border-bottom:1px solid #161616;}
+.fa-stmt-table td:first-child{text-align:left;color:var(--muted);}
+.fa-stmt-table tr:hover{background:var(--bg3);}
+
+/* heatmap */
+.heat-grid{display:flex;flex-wrap:wrap;gap:6px;}
+.heat-sector{flex:1;min-width:calc(33% - 6px);background:var(--bg2);border:1px solid var(--border);padding:0;overflow:hidden;}
+.heat-sector-header{padding:6px 8px;font-size:10px;font-weight:600;letter-spacing:1px;color:var(--accent);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;}
+.heat-sector-chg{font-weight:500;}
+.heat-stocks{display:flex;flex-wrap:wrap;padding:3px;}
+.heat-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 2px;margin:2px;min-width:58px;flex:1;cursor:pointer;border:1px solid transparent;transition:border-color .15s;}
+.heat-cell:hover{border-color:var(--text);z-index:1;}
+.heat-ticker{font-size:10px;font-weight:600;color:#fff;text-shadow:0 0 2px rgba(0,0,0,.8);}
+.heat-pct{font-size:9px;font-weight:500;color:#fff;text-shadow:0 0 2px rgba(0,0,0,.8);}
+
+/* prediction markets */
+.pred-row{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid #161616;cursor:pointer;transition:background .1s;gap:12px;}
+.pred-row:hover{background:var(--bg3);}
+.pred-row.selected{background:#1a1600;border-left:2px solid var(--accent);}
+.pred-q{flex:1;color:var(--text);font-size:12px;font-weight:500;}
+.pred-pct{font-size:14px;font-weight:600;min-width:55px;text-align:right;}
+.pred-yes{color:var(--green);}.pred-no{color:var(--red);}
+.pred-meta{display:flex;gap:12px;min-width:200px;justify-content:flex-end;}
+.pred-meta-item{color:var(--muted);font-size:10px;}
+.pred-bar{width:100px;height:4px;background:#222;border-radius:2px;overflow:hidden;display:inline-block;vertical-align:middle;}
+.pred-bar-fill{height:100%;border-radius:2px;}
+.pred-group-hdr{padding:6px 16px;color:var(--accent);font-size:10px;letter-spacing:2px;background:#111;border-top:1px solid var(--border);font-weight:600;cursor:pointer;display:flex;justify-content:space-between;user-select:none;}
+.pred-group-hdr:hover{background:var(--bg3);}
+.pred-group-arrow{transition:transform .2s;}
+.pred-group-arrow.collapsed{transform:rotate(-90deg);}
+
+/* newsletter */
+.nl-header{padding:12px 0;border-bottom:2px solid var(--accent);margin-bottom:12px;}
+.nl-title{color:var(--accent);font-size:14px;font-weight:600;letter-spacing:1px;}
+.nl-meta{color:var(--muted);font-size:10px;margin-top:4px;}
+.nl-body{color:var(--text);font-size:12px;line-height:1.7;word-wrap:break-word;padding-bottom:40px;}
+.nl-body p{margin:0 0 10px;}
+.nl-body .nl-section{color:var(--accent);font-weight:600;letter-spacing:1px;margin:20px 0 6px;padding-bottom:3px;border-bottom:1px solid var(--border);}
+.nl-body .nl-heading{color:var(--text);font-weight:600;margin:14px 0 4px;}
+.nl-body .nl-byline{color:var(--muted);font-size:11px;font-style:italic;margin:2px 0 10px;}
+.nl-body .nl-bullet{padding-left:16px;margin:2px 0;}
+.nl-body a{color:var(--blue);}
+
+/* chat */
+.chat-msg{padding:10px 0;border-bottom:1px solid #161616;}
+.chat-role{font-size:9px;letter-spacing:1px;font-weight:600;margin-bottom:4px;}
+.chat-role-user{color:var(--blue);}
+.chat-role-assistant{color:var(--accent);}
+.chat-text{color:var(--text);font-size:12px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;}
+.chat-text code{background:var(--bg3);padding:1px 4px;border-radius:2px;font-size:11px;}
+.chat-text strong{color:var(--accent);}
+.chat-cursor{display:inline-block;width:6px;height:12px;background:var(--accent);animation:blink 1s step-end infinite;}
+@keyframes blink{50%{opacity:0;}}
+
+/* economic calendar */
+.eco-date-header td{padding:6px 10px;color:var(--accent);font-size:10px;letter-spacing:2px;background:#111;border-top:1px solid var(--border);font-weight:600;text-align:left;}
+.impact-high{color:var(--red);font-weight:600;}
+.impact-medium{color:var(--accent);}
+.impact-low{color:var(--muted);}
+.impact-holiday{color:var(--blue);font-style:italic;}
+.eco-beat{color:var(--green);font-weight:500;}
+.eco-miss{color:var(--red);font-weight:500;}
+
+/* news */
+.news-item{padding:12px 0;border-bottom:1px solid var(--border);}
+.news-item:hover{background:var(--bg3);margin:0 -16px;padding:12px 16px;}
+.news-source{font-size:9px;letter-spacing:1px;font-weight:600;margin-right:8px;}
+.news-source-dealbook{color:#5c9eed;}
+.news-source-ft{color:#f2c1a4;}
+.news-source-wsj{color:#6db4e0;}
+.news-source-economist{color:#e05a4e;}
+.news-source-cnbc{color:#0a6ebd;}
+.news-source-bbc{color:#bb1919;}
+.news-source-axios{color:#55bfcf;}
+.news-source-marketwatch{color:#00ac4e;}
+.news-source-default{color:var(--muted);}
+.news-time{color:var(--muted);font-size:10px;}
+.news-title{color:var(--text);font-size:12px;font-weight:500;margin:4px 0 2px;cursor:pointer;}
+.news-title:hover{color:var(--accent);}
+.news-title a{color:inherit;text-decoration:none;}
+.news-title a:hover{text-decoration:underline;}
+.news-desc{color:var(--muted);font-size:11px;line-height:1.4;}
+.news-nl-btn{font-size:10px!important;padding:3px 10px!important;}
+.news-nl-btn.active{background:var(--accent)!important;color:#000!important;}
