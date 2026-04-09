@@ -49,7 +49,7 @@ function renderTOP(){
       el.appendChild(hdr);
     }
 
-    const srcMap={'DealBook':'dealbook','FT':'ft','WSJ':'wsj','Economist':'economist','CNBC':'cnbc','BBC':'bbc','Axios':'axios','MarketWatch':'marketwatch'};
+    const srcMap={'DealBook':'dealbook','FT':'ft','WSJ':'wsj','Economist':'economist','CNBC':'cnbc','BBC':'bbc','Axios':'axios','MarketWatch':'marketwatch','Reuters':'reuters'};
     const srcCls='news-source-'+(srcMap[a.source]||'default');
     const timeStr=estD?estTime(rawDate):'';
 

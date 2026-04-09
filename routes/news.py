@@ -291,6 +291,7 @@ def top():
         ('Economist', 'https://www.economist.com/finance-and-economics/rss.xml'),
         ('BBC', 'https://feeds.bbci.co.uk/news/business/rss.xml'),
         ('Axios', 'https://api.axios.com/feed/'),
+        ('Reuters', 'https://news.google.com/rss/search?q=reuters+business&hl=en-US&gl=US&ceid=US:en'),
     ]
     articles = []
     for source, url in feeds:
