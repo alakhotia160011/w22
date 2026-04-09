@@ -59,22 +59,25 @@ def chat():
     system = f"""You are a general-purpose AI chatbot. Answer any question the user asks - markets, finance, science, history, coding, life advice, whatever. Be helpful, clear, and concise. If market data is relevant, here's a live snapshot:
 {market_context}{news_context}"""
 
-    def generate():
-        try:
-            with client.messages.stream(
-                model='claude-sonnet-4-20250514',
-                max_tokens=1024,
-                system=system,
-                messages=messages,
-            ) as stream:
-                for text in stream.text_stream:
-                    # escape newlines so SSE doesn't break
-                    escaped = text.replace('\n', '\\n')
-                    yield f"data: {escaped}\n\n"
-            yield "data: [DONE]\n\n"
-        except Exception as e:
-            yield f"data: Error: {str(e)}\n\n"
-            yield "data: [DONE]\n\n"
+    # try streaming first, fall back to non-streaming
+    try:
+        def generate():
+            try:
+                with client.messages.stream(
+                    model='claude-sonnet-4-20250514',
+                    max_tokens=1024,
+                    system=system,
+                    messages=messages,
+                ) as stream:
+                    for text in stream.text_stream:
+                        escaped = text.replace('\n', '\\n')
+                        yield f"data: {escaped}\n\n"
+                yield "data: [DONE]\n\n"
+            except Exception as e:
+                yield f"data: Error: {str(e)}\n\n"
+                yield "data: [DONE]\n\n"
 
-    return Response(stream_with_context(generate()), mimetype='text/event-stream',
-                    headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no', 'Connection': 'keep-alive'})
+        return Response(stream_with_context(generate()), mimetype='text/event-stream',
+                        headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no', 'Connection': 'keep-alive'})
+    except Exception as e:
+        return jsonify({'error': str(e)})
