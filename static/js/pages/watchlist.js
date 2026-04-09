@@ -544,11 +544,14 @@ async function renderChart(ticker,period){
     rsiData[ticker]=calcRSI(closes,14);
     rsi9Data[ticker]=calcRSI(closes,9);
     updateRow(ticker);
-    const isUp=closes[closes.length-1]>=closes[0];
+    // use prev close from quote data for daily change color
+    const current=closes[closes.length-1];
+    const qd=priceData[ticker];
+    const prevClose=qd?qd.pc:null;
+    const isUp=prevClose?(current>=prevClose):(current>=closes[0]);
     const color=isUp?'#00c853':'#ff3d3d';
     if(currentChart)currentChart.destroy();
     const ctx=document.getElementById('priceChart').getContext('2d');
-    // build tick visibility set
     const tickSet=new Set(axis.tickIndices);
     currentChart=new Chart(ctx,{
       type:'line',
@@ -578,15 +581,20 @@ async function renderChart(ticker,period){
     });
     const high=Math.max(...highs.filter(v=>v));
     const low=Math.min(...lows.filter(v=>v));
-    const chg=(closes[closes.length-1]-closes[0])/closes[0]*100;
+    const dailyChg=prevClose?((current-prevClose)/prevClose)*100:null;
+    const periodChg=((current-closes[0])/closes[0])*100;
+    const dailyStr=dailyChg!=null?`${dailyChg>=0?'+':''}${dailyChg.toFixed(2)}%`:'--';
+    const dailyCls=dailyChg!=null?(dailyChg>=0?'pos':'neg'):'neutral';
+    const periodStr=`${periodChg>=0?'+':''}${periodChg.toFixed(2)}%`;
+    const periodCls=periodChg>=0?'pos':'neg';
     const rsi9=rsi9Data[ticker],rsi14=rsiData[ticker];
     document.getElementById('chartStats').innerHTML=`
-      <div class="stat"><div class="stat-label">CURRENT</div><div class="stat-value">${fp(closes[closes.length-1])}</div></div>
-      <div class="stat"><div class="stat-label">PERIOD CHG</div><div class="stat-value ${chg>=0?'pos':'neg'}">${chg>=0?'+':''}${chg.toFixed(2)}%</div></div>
+      <div class="stat"><div class="stat-label">CURRENT</div><div class="stat-value">${fp(current)}</div></div>
+      <div class="stat"><div class="stat-label">DAILY CHG</div><div class="stat-value ${dailyCls}">${dailyStr}</div></div>
+      <div class="stat"><div class="stat-label">PERIOD CHG</div><div class="stat-value ${periodCls}">${periodStr}</div></div>
       <div class="stat"><div class="stat-label">RSI 9 / 14</div><div class="stat-value">${rsi9!=null?rsi9.toFixed(1):'--'} / ${rsi14!=null?rsi14.toFixed(1):'--'}</div></div>
       <div class="stat"><div class="stat-label">PERIOD HIGH</div><div class="stat-value pos">${fp(high)}</div></div>
-      <div class="stat"><div class="stat-label">PERIOD LOW</div><div class="stat-value neg">${fp(low)}</div></div>
-      <div class="stat"><div class="stat-label">AVG VOL</div><div class="stat-value neutral">${volumes.length?fVol(volumes.reduce((a,b)=>a+b,0)/volumes.length):'--'}</div></div>`;
+      <div class="stat"><div class="stat-label">PERIOD LOW</div><div class="stat-value neg">${fp(low)}</div></div>`;
   }catch(e){loadingEl.style.display='none';}
 }
 
@@ -653,7 +661,10 @@ function renderChartWithData(ticker,data,period){
   const axis=buildAxisConfig(data.t,period);
   rsiData[ticker]=calcRSI(closes);
   updateRow(ticker);
-  const isUp=closes[closes.length-1]>=closes[0];
+  const current=closes[closes.length-1];
+  const qd=priceData[ticker];
+  const prevClose=qd?qd.pc:null;
+  const isUp=prevClose?(current>=prevClose):(current>=closes[0]);
   const color=isUp?'#00c853':'#ff3d3d';
   if(currentChart)currentChart.destroy();
   const ctx=document.getElementById('priceChart').getContext('2d');
@@ -681,11 +692,17 @@ function renderChartWithData(ticker,data,period){
   });
   const high=Math.max(...highs.filter(v=>v));
   const low=Math.min(...lows.filter(v=>v));
-  const chg=(closes[closes.length-1]-closes[0])/closes[0]*100;
+  const dailyChg=prevClose?((current-prevClose)/prevClose)*100:null;
+  const periodChg=((current-closes[0])/closes[0])*100;
+  const dailyStr=dailyChg!=null?`${dailyChg>=0?'+':''}${dailyChg.toFixed(2)}%`:'--';
+  const dailyCls=dailyChg!=null?(dailyChg>=0?'pos':'neg'):'neutral';
+  const periodStr=`${periodChg>=0?'+':''}${periodChg.toFixed(2)}%`;
+  const periodCls=periodChg>=0?'pos':'neg';
   const rsi=rsiData[ticker];
   document.getElementById('chartStats').innerHTML=`
-    <div class="stat"><div class="stat-label">CURRENT</div><div class="stat-value">${fp(closes[closes.length-1])}</div></div>
-    <div class="stat"><div class="stat-label">PERIOD CHG</div><div class="stat-value ${chg>=0?'pos':'neg'}">${chg>=0?'+':''}${chg.toFixed(2)}%</div></div>
+    <div class="stat"><div class="stat-label">CURRENT</div><div class="stat-value">${fp(current)}</div></div>
+    <div class="stat"><div class="stat-label">DAILY CHG</div><div class="stat-value ${dailyCls}">${dailyStr}</div></div>
+    <div class="stat"><div class="stat-label">PERIOD CHG</div><div class="stat-value ${periodCls}">${periodStr}</div></div>
     <div class="stat"><div class="stat-label">RSI (14)</div><div class="stat-value">${rsi!=null?rsi.toFixed(1):'--'}</div></div>
     <div class="stat"><div class="stat-label">PERIOD HIGH</div><div class="stat-value pos">${fp(high)}</div></div>
     <div class="stat"><div class="stat-label">PERIOD LOW</div><div class="stat-value neg">${fp(low)}</div></div>
