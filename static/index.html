@@ -309,6 +309,14 @@
         <span class="home-cmd-key">NEWS &lt;GO&gt;</span>
         <span class="home-cmd-desc">My Newsletters (Money Stuff, TLDR, Endpoints...)</span>
       </div>
+      <div class="home-cmd" onclick="execCmd('MOST')">
+        <span class="home-cmd-key">MOST &lt;GO&gt;</span>
+        <span class="home-cmd-desc">Top Movers (Gainers, Losers, Most Active)</span>
+      </div>
+      <div class="home-cmd" onclick="execCmd('SRCH')">
+        <span class="home-cmd-key">SRCH &lt;GO&gt;</span>
+        <span class="home-cmd-desc">Equity Screener (Filter by Cap, P/E, Sector)</span>
+      </div>
     </div>
     <div class="home-footer" style="display:flex;justify-content:space-between;width:100%;padding:0 40px;position:fixed;bottom:16px;left:0;right:0;">
       <span>TYPE A COMMAND AND PRESS ENTER &middot; TYPE <span style="color:var(--accent)">LEARN</span> FOR A GUIDE</span>
@@ -950,6 +958,60 @@
 </div>
 </div><!-- /page-news -->
 
+<!-- MOST PAGE -->
+<div class="page" id="page-most">
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div><div class="logo">W22 &#9654; MOST</div><div class="tagline">TOP MOVERS</div></div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span id="mostStatus" style="color:var(--muted);font-size:10px;">--</span>
+    <button class="tb-btn" onclick="loadMOST()">&#8635; REFRESH</button>
+  </div>
+</div>
+<div id="mostContent" style="height:calc(100vh - 38px - 41px);background:var(--bg);"></div>
+</div><!-- /page-most -->
+
+<!-- COMP PAGE -->
+<div class="page" id="page-comp">
+<div class="topbar">
+  <div><div class="logo" id="compLogo">W22 &#9654; COMP</div><div class="tagline" id="compTagline">COMPARABLES</div></div>
+</div>
+<div id="compContent" style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);padding:16px;"></div>
+</div><!-- /page-comp -->
+
+<!-- CACS PAGE -->
+<div class="page" id="page-cacs">
+<div class="topbar">
+  <div><div class="logo" id="cacsLogo">W22 &#9654; CACS</div><div class="tagline" id="cacsTagline">CORPORATE ACTIONS</div></div>
+</div>
+<div id="cacsContent" style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);padding:16px 24px;"></div>
+</div><!-- /page-cacs -->
+
+<!-- SRCH PAGE -->
+<div class="page" id="page-srch">
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div><div class="logo">W22 &#9654; SRCH</div><div class="tagline">EQUITY SCREENER</div></div>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <span style="color:var(--muted);font-size:10px;">MIN CAP:</span>
+      <select id="srchMinCap" class="search-box" style="width:80px;font-size:10px;"><option value="">Any</option><option value="10000000000">10B+</option><option value="50000000000">50B+</option><option value="200000000000">200B+</option></select>
+      <span style="color:var(--muted);font-size:10px;">MAX P/E:</span>
+      <select id="srchMaxPE" class="search-box" style="width:60px;font-size:10px;"><option value="">Any</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="30">30</option></select>
+      <span style="color:var(--muted);font-size:10px;">SECTOR:</span>
+      <select id="srchSector" class="search-box" style="width:100px;font-size:10px;"><option value="">All</option><option value="Technology">Tech</option><option value="Healthcare">Health</option><option value="Financial Services">Finance</option><option value="Energy">Energy</option><option value="Consumer Cyclical">Cons Cyc</option><option value="Industrials">Indust</option><option value="Communication Services">Comms</option></select>
+      <span style="color:var(--muted);font-size:10px;">SORT:</span>
+      <select id="srchSort" class="search-box" style="width:80px;font-size:10px;"><option value="marketCap">Mkt Cap</option><option value="pe">P/E</option><option value="change">% Change</option><option value="volume">Volume</option></select>
+      <button class="tb-btn" onclick="loadSRCH()" style="font-size:10px;padding:3px 10px;">SCREEN</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span id="srchStatus" style="color:var(--muted);font-size:10px;">--</span>
+  </div>
+</div>
+<div id="srchContent" style="height:calc(100vh - 38px - 41px);overflow-y:auto;background:var(--bg);"></div>
+</div><!-- /page-srch -->
+
 <!-- GLOBAL CHART OVERLAY (used by WEI, WEIF, FX) -->
 <div class="ticker-ac" id="tickerAC" style="display:none;"></div>
 
@@ -1009,6 +1071,10 @@
 <script src="/static/js/pages/fx.js"></script>
 <script src="/static/js/pages/global-chart.js"></script>
 <script src="/static/js/pages/eco.js"></script>
+<script src="/static/js/pages/most.js"></script>
+<script src="/static/js/pages/comp.js"></script>
+<script src="/static/js/pages/cacs.js"></script>
+<script src="/static/js/pages/srch.js"></script>
 
 <!-- Command routing & clock (must load last - references all pages) -->
 <script src="/static/js/commands.js"></script>

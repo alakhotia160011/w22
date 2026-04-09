@@ -80,6 +80,7 @@ const refreshTargets={
   heat:{load:()=>loadHEAT(), status:'heatStatus'},
   fit:{load:()=>loadFIT(), status:'fitStatus'},
   pred:{load:()=>loadPRED(), status:'predStatus'},
+  most:{load:()=>loadMOST(), status:'mostStatus'},
 };
 setInterval(()=>{
   refreshCountdown--;

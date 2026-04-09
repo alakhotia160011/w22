@@ -15,6 +15,8 @@ let topInitialized=false;
 let predInitialized=false;
 let fitInitialized=false;
 let newsInitialized=false;
+let mostInitialized=false;
+let srchInitialized=false;
 
 const COMMANDS={
   'W':{page:'watchlist',label:'Watchlist'},
@@ -31,6 +33,8 @@ const COMMANDS={
   'LEARN':{page:'learn',label:'Learn'},
   'TOP':{page:'top',label:'Top News'},
   'NEWS':{page:'news',label:'Newsletters'},
+  'MOST':{page:'most',label:'Top Movers'},
+  'SRCH':{page:'srch',label:'Equity Screener'},
 };
 
 let acSuppressed=false;
@@ -65,12 +69,12 @@ function execCmd(cmd){
     return;
   }
 
-  const securityCmds=['GP','DES','FA','EVT','CN'];
+  const securityCmds=['GP','DES','FA','EVT','CN','COMP','CACS'];
 
   // "LOAD AAPL" or "AAPL" followed by sub-command
   if(parts[0]==='LOAD'&&parts[1]){
     loadedTicker=parts[1];
-    document.getElementById('cmdHint').textContent=`${loadedTicker} loaded | GP DES FA EVT`;
+    document.getElementById('cmdHint').textContent=`${loadedTicker} loaded | GP DES FA EVT CN COMP CACS`;
     // default to GP (chart)
     execSecurityCmd(loadedTicker,'GP');
     return;
@@ -134,7 +138,7 @@ async function searchAndLoad(query){
 }
 
 function execSecurityCmd(ticker,cmd){
-  document.getElementById('cmdHint').textContent=`${ticker} | GP DES FA EVT CN | W22: Home`;
+  document.getElementById('cmdHint').textContent=`${ticker} | GP DES FA EVT CN COMP CACS | W22: Home`;
   if(cmd==='GP'){
     navigateTo('gp');
     loadGP(ticker);
@@ -150,6 +154,12 @@ function execSecurityCmd(ticker,cmd){
   } else if(cmd==='CN'){
     navigateTo('cn');
     loadCN(ticker);
+  } else if(cmd==='COMP'){
+    navigateTo('comp');
+    loadCOMP(ticker);
+  } else if(cmd==='CACS'){
+    navigateTo('cacs');
+    loadCACS(ticker);
   }
 }
 
@@ -217,13 +227,23 @@ function navigateTo(page){
       ecoInitialized=true;
       loadECO();
     }
+  } else if(page==='most'){
+    document.getElementById('cmdHint').textContent='W22: Home | W | SRCH | HEAT';
+    if(!mostInitialized){mostInitialized=true;loadMOST();}
+  } else if(page==='srch'){
+    document.getElementById('cmdHint').textContent='W22: Home | W | MOST | HEAT';
+    if(!srchInitialized){srchInitialized=true;loadSRCH();}
+  } else if(page==='comp'){
+    document.getElementById('cmdHint').textContent='W22: Home | W | GP DES FA EVT CN CACS';
+  } else if(page==='cacs'){
+    document.getElementById('cmdHint').textContent='W22: Home | W | GP DES FA EVT CN COMP';
   }
   // refocus command input
   document.getElementById('cmdInput').focus();
 }
 
 // command bar autocomplete - custom handler (not initTickerAC)
-const knownCmds=new Set(Object.keys(COMMANDS).concat(['HS','FA','GP','DES','EVT','CN','LOAD']));
+const knownCmds=new Set(Object.keys(COMMANDS).concat(['HS','FA','GP','DES','EVT','CN','COMP','CACS','LOAD']));
 const cmdInputEl=document.getElementById('cmdInput');
 cmdInputEl.addEventListener('input',function(){
   if(acSuppressed){hideAC();return;}
@@ -235,7 +255,7 @@ cmdInputEl.addEventListener('input',function(){
   // too short
   if(val.length<2){hideAC();return;}
   // command + partial ticker (e.g. "FA app") - search the second part
-  if(parts.length>1&&['FA','GP','DES','EVT','CN','LOAD'].includes(firstWord)){
+  if(parts.length>1&&['FA','GP','DES','EVT','CN','COMP','CACS','LOAD'].includes(firstWord)){
     const query=parts.slice(1).join(' ');
     if(query.length<2){hideAC();return;}
     clearTimeout(acTimer);
