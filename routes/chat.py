@@ -4,14 +4,11 @@ import time
 
 chat_bp = Blueprint('chat', __name__)
 
-# cache market context so we don't fetch on every message
 _market_ctx_cache = {'ts': 0, 'text': ''}
 
 def _get_market_context():
-    """Get cached market context, refresh every 5 minutes."""
     if time.time() - _market_ctx_cache['ts'] < 300 and _market_ctx_cache['text']:
         return _market_ctx_cache['text']
-
     ctx = ""
     try:
         import yfinance as yf
@@ -32,7 +29,6 @@ def _get_market_context():
             if lines:
                 ctx = "\n\nLIVE MARKET DATA:\n" + "\n".join(lines)
     except: pass
-
     _market_ctx_cache['ts'] = time.time()
     _market_ctx_cache['text'] = ctx
     return ctx
@@ -50,14 +46,29 @@ def chat():
     if not messages:
         return jsonify({'error': 'No messages'})
 
+    mode = request.args.get('mode', 'stream')
     client = anthropic.Anthropic(api_key=api_key)
-    market_context = _market_ctx_cache.get('text', '')  # use cached, don't block
+    market_context = _market_ctx_cache.get('text', '')
 
     system = f"""You are a general-purpose AI chatbot. Answer any question the user asks - markets, finance, science, history, coding, life advice, whatever. Be helpful, clear, and concise.{market_context}"""
 
+    # non-streaming mode (for Railway / environments that buffer SSE)
+    if mode == 'sync':
+        try:
+            response = client.messages.create(
+                model='claude-sonnet-4-20250514',
+                max_tokens=1024,
+                system=system,
+                messages=messages,
+            )
+            text = response.content[0].text if response.content else ''
+            return jsonify({'response': text})
+        except Exception as e:
+            return jsonify({'error': f'{type(e).__name__}: {str(e)}'})
+
+    # streaming mode
     def generate():
         yield "data: ...\n\n"
-        got_text = False
         try:
             response = client.messages.create(
                 model='claude-sonnet-4-20250514',
@@ -71,9 +82,6 @@ def chat():
                     text = event.delta.text
                     escaped = text.replace('\n', '\\n')
                     yield f"data: {escaped}\n\n"
-                    got_text = True
-            if not got_text:
-                yield "data: [No content in response]\n\n"
             yield "data: [DONE]\n\n"
         except Exception as e:
             yield f"data: Error: {type(e).__name__}: {str(e)}\n\n"
