@@ -11,11 +11,12 @@ function loadGP(ticker){
   document.getElementById('gpCompareInput').value='';
   document.querySelectorAll('#page-gp .period-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('#page-gp .period-btn')[4].classList.add('active');
-  // fetch prev close
+  // fetch prev close, then render chart
   fetch(`${API}/quote/${encodeURIComponent(ticker)}`).then(r=>r.json()).then(q=>{
     if(q.pc)gpPrevClose=q.pc;
-  }).catch(()=>{});
-  renderGPChart(ticker,gpPeriod);
+  }).catch(()=>{}).finally(()=>{
+    renderGPChart(ticker,gpPeriod);
+  });
 }
 
 async function gpAddCompare(){

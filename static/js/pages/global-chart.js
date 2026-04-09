@@ -12,11 +12,12 @@ function openGlobalChart(ticker,name){
   document.getElementById('gChartStats').innerHTML='';
   overlay.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
   overlay.querySelectorAll('.period-btn')[4].classList.add('active');
-  // fetch prev close
+  // fetch prev close, then render chart
   fetch(`${API}/quote/${encodeURIComponent(ticker)}`).then(r=>r.json()).then(q=>{
     if(q.pc)gPrevClose=q.pc;
-  }).catch(()=>{});
-  renderGlobalChart(ticker,gPeriod);
+  }).catch(()=>{}).finally(()=>{
+    renderGlobalChart(ticker,gPeriod);
+  });
 }
 
 function closeGlobalChart(){
