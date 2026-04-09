@@ -1,18 +1,29 @@
 let srchData=[];
+let srchMinCap='', srchMaxPE='', srchSector='';
+
+function setSrchCap(val,btn){
+  srchMinCap=val;
+  document.querySelectorAll('.srch-cap-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function setSrchPE(val,btn){
+  srchMaxPE=val;
+  document.querySelectorAll('.srch-pe-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function setSrchSector(val,btn){
+  srchSector=val;
+  document.querySelectorAll('.srch-sec-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
 
 async function loadSRCH(){
   const el=document.getElementById('srchContent');
   el.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)"><span class="spinner"></span></div>';
-  // collect filter params
   const params=new URLSearchParams();
-  const minCap=document.getElementById('srchMinCap').value;
-  const maxPE=document.getElementById('srchMaxPE').value;
-  const sector=document.getElementById('srchSector').value;
-  const sort=document.getElementById('srchSort').value;
-  if(minCap)params.set('min_cap',minCap);
-  if(maxPE)params.set('max_pe',maxPE);
-  if(sector)params.set('sector',sector);
-  if(sort)params.set('sort_by',sort);
+  if(srchMinCap)params.set('min_cap',srchMinCap);
+  if(srchMaxPE)params.set('max_pe',srchMaxPE);
+  if(srchSector)params.set('sector',srchSector);
   params.set('limit','50');
   try{
     const res=await fetch(`${API}/srch?${params}`);
@@ -26,21 +37,24 @@ async function loadSRCH(){
 
 function renderSRCH(){
   const el=document.getElementById('srchContent');
-  if(!srchData.length){el.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No results. Try different filters.</div>';return;}
+  if(!srchData.length){el.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No results. Adjust filters and press SCREEN.</div>';return;}
   let html='<table style="min-width:900px;"><thead><tr>';
   html+='<th style="text-align:left">TICKER</th><th style="text-align:left">NAME</th><th>SECTOR</th><th>MKT CAP</th><th>P/E</th><th>PRICE</th><th>%CHG</th><th>VOLUME</th>';
   html+='</tr></thead><tbody>';
   srchData.forEach(s=>{
-    const chgCls=(s.change||0)>0?'pos':(s.change||0)<0?'neg':'neutral';
-    html+=`<tr class="data-row" style="cursor:pointer" onclick="openGlobalChart('${s.symbol}','${(s.name||'').replace(/'/g,"\\'")}')">`;
+    const chgStr=s.change||'0%';
+    const chgNum=parseFloat(chgStr);
+    const chgCls=chgNum>0?'pos':chgNum<0?'neg':'neutral';
+    const name=(s.name||'').replace(/'/g,"\\'");
+    html+=`<tr class="data-row" style="cursor:pointer" onclick="openGlobalChart('${s.symbol}','${name}')">`;
     html+=`<td style="text-align:left;color:var(--blue);font-weight:500">${s.symbol}</td>`;
-    html+=`<td style="text-align:left;color:var(--muted)">${(s.name||'').substring(0,25)}</td>`;
+    html+=`<td style="text-align:left;color:var(--muted)">${(s.name||'').substring(0,30)}</td>`;
     html+=`<td style="color:var(--muted);font-size:10px">${s.sector||'--'}</td>`;
-    html+=`<td>${s.marketCap?fmtNum(s.marketCap):'--'}</td>`;
-    html+=`<td>${s.pe!=null?s.pe.toFixed(1):'--'}</td>`;
-    html+=`<td class="price-cell">${fp(s.price)}</td>`;
-    html+=`<td class="${chgCls}">${s.change!=null?(s.change>0?'+':'')+s.change.toFixed(1)+'%':'--'}</td>`;
-    html+=`<td style="color:var(--muted);font-size:10px">${fVol(s.volume)}</td>`;
+    html+=`<td>${s.marketCap||'--'}</td>`;
+    html+=`<td>${s.pe||'--'}</td>`;
+    html+=`<td class="price-cell">${s.price||'--'}</td>`;
+    html+=`<td class="${chgCls}">${chgStr}</td>`;
+    html+=`<td style="color:var(--muted);font-size:10px">${s.volume||'--'}</td>`;
     html+=`</tr>`;
   });
   html+='</tbody></table>';

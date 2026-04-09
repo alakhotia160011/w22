@@ -2,7 +2,7 @@
 #wirpTableBody td:first-child{text-align:left;color:var(--text);font-weight:500;}
 
 /* active button rules */
-.wirp-cb-btn.active,.eco-week-btn.active,.eco-imp-btn.active,.top-src-btn.active,.heat-idx-btn.active,.heat-per-btn.active,.fa-tab-btn.active,.hs-mode-btn.active,.hs-top-btn.active,.gp-mode-btn.active,.pred-cat-btn.active{background:var(--accent)!important;color:#000!important;}
+.wirp-cb-btn.active,.eco-week-btn.active,.eco-imp-btn.active,.top-src-btn.active,.heat-idx-btn.active,.heat-per-btn.active,.fa-tab-btn.active,.hs-mode-btn.active,.hs-top-btn.active,.gp-mode-btn.active,.pred-cat-btn.active,.srch-cap-btn.active,.srch-pe-btn.active,.srch-sec-btn.active{background:var(--accent)!important;color:#000!important;}
 
 /* fundamentals */
 .fa-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}

@@ -124,7 +124,7 @@
   @keyframes flashUpdate{0%{background:rgba(240,165,0,.08)}100%{background:transparent}}
   .fu{animation:flashUpdate .8s ease;}
   #wirpTableBody td:first-child{text-align:left;color:var(--text);font-weight:500;}
-  .wirp-cb-btn.active,.eco-week-btn.active,.eco-imp-btn.active,.top-src-btn.active,.heat-idx-btn.active,.heat-per-btn.active,.fa-tab-btn.active,.hs-mode-btn.active,.hs-top-btn.active,.gp-mode-btn.active,.pred-cat-btn.active{background:var(--accent)!important;color:#000!important;}
+  .wirp-cb-btn.active,.eco-week-btn.active,.eco-imp-btn.active,.top-src-btn.active,.heat-idx-btn.active,.heat-per-btn.active,.fa-tab-btn.active,.hs-mode-btn.active,.hs-top-btn.active,.gp-mode-btn.active,.pred-cat-btn.active,.srch-cap-btn.active,.srch-pe-btn.active,.srch-sec-btn.active{background:var(--accent)!important;color:#000!important;}
   .fa-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
   .fa-card{background:var(--bg2);border:1px solid var(--border);padding:10px 14px;}
   .fa-card-title{color:var(--accent);font-size:9px;letter-spacing:1px;font-weight:600;margin-bottom:8px;}
@@ -993,17 +993,38 @@
 <div class="topbar">
   <div style="display:flex;align-items:center;gap:16px;">
     <div><div class="logo">W22 &#9654; SRCH</div><div class="tagline">EQUITY SCREENER</div></div>
-    <div style="display:flex;gap:6px;align-items:center;">
-      <span style="color:var(--muted);font-size:10px;">MIN CAP:</span>
-      <select id="srchMinCap" class="search-box" style="width:80px;font-size:10px;"><option value="">Any</option><option value="10000000000">10B+</option><option value="50000000000">50B+</option><option value="200000000000">200B+</option></select>
-      <span style="color:var(--muted);font-size:10px;">MAX P/E:</span>
-      <select id="srchMaxPE" class="search-box" style="width:60px;font-size:10px;"><option value="">Any</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="30">30</option></select>
-      <span style="color:var(--muted);font-size:10px;">SECTOR:</span>
-      <select id="srchSector" class="search-box" style="width:100px;font-size:10px;"><option value="">All</option><option value="Technology">Tech</option><option value="Healthcare">Health</option><option value="Financial Services">Finance</option><option value="Energy">Energy</option><option value="Consumer Cyclical">Cons Cyc</option><option value="Industrials">Indust</option><option value="Communication Services">Comms</option></select>
-      <span style="color:var(--muted);font-size:10px;">SORT:</span>
-      <select id="srchSort" class="search-box" style="width:80px;font-size:10px;"><option value="marketCap">Mkt Cap</option><option value="pe">P/E</option><option value="change">% Change</option><option value="volume">Volume</option></select>
-      <button class="tb-btn" onclick="loadSRCH()" style="font-size:10px;padding:3px 10px;">SCREEN</button>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <span style="color:var(--muted);font-size:9px;">CAP:</span>
+      <div style="display:flex;gap:2px;" id="srchCapBtns">
+        <button class="tb-btn srch-cap-btn active" onclick="setSrchCap('',this)" style="font-size:10px;padding:3px 8px;">ALL</button>
+        <button class="tb-btn srch-cap-btn" onclick="setSrchCap('10000000000',this)" style="font-size:10px;padding:3px 8px;">10B+</button>
+        <button class="tb-btn srch-cap-btn" onclick="setSrchCap('50000000000',this)" style="font-size:10px;padding:3px 8px;">50B+</button>
+        <button class="tb-btn srch-cap-btn" onclick="setSrchCap('200000000000',this)" style="font-size:10px;padding:3px 8px;">200B+</button>
+      </div>
     </div>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <span style="color:var(--muted);font-size:9px;">P/E:</span>
+      <div style="display:flex;gap:2px;" id="srchPEBtns">
+        <button class="tb-btn srch-pe-btn active" onclick="setSrchPE('',this)" style="font-size:10px;padding:3px 8px;">ALL</button>
+        <button class="tb-btn srch-pe-btn" onclick="setSrchPE('10',this)" style="font-size:10px;padding:3px 8px;">&lt;10</button>
+        <button class="tb-btn srch-pe-btn" onclick="setSrchPE('15',this)" style="font-size:10px;padding:3px 8px;">&lt;15</button>
+        <button class="tb-btn srch-pe-btn" onclick="setSrchPE('20',this)" style="font-size:10px;padding:3px 8px;">&lt;20</button>
+        <button class="tb-btn srch-pe-btn" onclick="setSrchPE('30',this)" style="font-size:10px;padding:3px 8px;">&lt;30</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <span style="color:var(--muted);font-size:9px;">SECTOR:</span>
+      <div style="display:flex;gap:2px;" id="srchSectorBtns">
+        <button class="tb-btn srch-sec-btn active" onclick="setSrchSector('',this)" style="font-size:10px;padding:3px 8px;">ALL</button>
+        <button class="tb-btn srch-sec-btn" onclick="setSrchSector('Technology',this)" style="font-size:10px;padding:3px 8px;">TECH</button>
+        <button class="tb-btn srch-sec-btn" onclick="setSrchSector('Healthcare',this)" style="font-size:10px;padding:3px 8px;">HEALTH</button>
+        <button class="tb-btn srch-sec-btn" onclick="setSrchSector('Financial',this)" style="font-size:10px;padding:3px 8px;">FIN</button>
+        <button class="tb-btn srch-sec-btn" onclick="setSrchSector('Energy',this)" style="font-size:10px;padding:3px 8px;">ENERGY</button>
+        <button class="tb-btn srch-sec-btn" onclick="setSrchSector('Consumer Cyclical',this)" style="font-size:10px;padding:3px 8px;">CONS</button>
+        <button class="tb-btn srch-sec-btn" onclick="setSrchSector('Industrials',this)" style="font-size:10px;padding:3px 8px;">IND</button>
+      </div>
+    </div>
+    <button class="tb-btn" onclick="loadSRCH()" style="font-size:10px;padding:3px 12px;">SCREEN</button>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
     <span id="srchStatus" style="color:var(--muted);font-size:10px;">--</span>

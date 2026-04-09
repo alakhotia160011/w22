@@ -28,13 +28,15 @@ function renderMOST(){
     let html=`<div style="flex:1;overflow-y:auto;background:var(--bg2);border:1px solid var(--border);">`;
     html+=`<div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--accent);font-size:10px;font-weight:600;letter-spacing:1px;">${s.icon} ${s.title} (${items.length})</div>`;
     items.forEach(q=>{
-      const chgCls=(q.changePercent||0)>0?'pos':(q.changePercent||0)<0?'neg':'neutral';
-      html+=`<div class="data-row" style="display:flex;padding:6px 12px;border-bottom:1px solid #161616;cursor:pointer;gap:8px;align-items:center;" onclick="openGlobalChart('${q.symbol}','${(q.name||'').replace(/'/g,"\\'")}')">`;
+      const chg=q.regularMarketChangePercent||0;
+      const chgCls=chg>0?'pos':chg<0?'neg':'neutral';
+      const name=(q.shortName||'').replace(/'/g,"\\'");
+      html+=`<div class="data-row" style="display:flex;padding:6px 12px;border-bottom:1px solid #161616;cursor:pointer;gap:8px;align-items:center;" onclick="openGlobalChart('${q.symbol}','${name}')">`;
       html+=`<span style="color:var(--blue);font-weight:500;min-width:55px;">${q.symbol}</span>`;
-      html+=`<span style="color:var(--muted);flex:1;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${q.name||''}</span>`;
-      html+=`<span class="price-cell" style="min-width:60px;text-align:right;">${fp(q.price)}</span>`;
-      html+=`<span class="${chgCls}" style="min-width:55px;text-align:right;">${q.changePercent!=null?(q.changePercent>0?'+':'')+q.changePercent.toFixed(1)+'%':'--'}</span>`;
-      html+=`<span style="color:var(--muted);font-size:10px;min-width:55px;text-align:right;">${fVol(q.volume)}</span>`;
+      html+=`<span style="color:var(--muted);flex:1;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${q.shortName||''}</span>`;
+      html+=`<span class="price-cell" style="min-width:60px;text-align:right;">${fp(q.regularMarketPrice)}</span>`;
+      html+=`<span class="${chgCls}" style="min-width:55px;text-align:right;">${chg!=0?(chg>0?'+':'')+chg.toFixed(1)+'%':'--'}</span>`;
+      html+=`<span style="color:var(--muted);font-size:10px;min-width:55px;text-align:right;">${fVol(q.regularMarketVolume)}</span>`;
       html+=`</div>`;
     });
     html+=`</div>`;
